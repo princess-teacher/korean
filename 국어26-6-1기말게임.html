@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>세종대왕을 도와 훈민정음을 반포하라</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap');
+        
+        body { 
+    font-family: 'Gowun Batang', 'Nanum Myeongjo', serif; /* 기본값 자체를 분위기 있는 바탕/명조체로 변경 */
+    background-color: #fdfbf7;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4c5a0' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            touch-action: pan-y;
+            overscroll-behavior: none; 
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        .serif { font-family: 'Nanum Myeongjo', serif; }
+
+        .hidden-screen { display: none !important; }
+        .choice-btn:hover { background-color: #fff7ed; transform: translateY(-2px); border-color: #b45309; }
+        .choice-btn.selected { background-color: #78350f; color: white; border-color: #451a03; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .wood-border {
+            border: 4px double #78350f;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        canvas { 
+            background: #fff; 
+            border-radius: 4px; 
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1); 
+            margin: 0 auto; 
+            display: block; 
+            touch-action: none; 
+            width: 100%; 
+            height: auto;
+            max-width: 640px; 
+        }
+
+        /* 미니게임 1 */
+        #runner-canvas {
+            background-color: #87CEEB;
+            border: 4px solid #8B4513;
+            image-rendering: pixelated; 
+        }
+        .d-pad-container {
+            display: flex; justify-content: center; gap: 20px; margin-top: 15px; width: 100%; max-width: 640px; user-select: none;
+            touch-action: none;
+        }
+        .d-pad-btn {
+            width: 70px; height: 70px; background-color: rgba(139, 69, 19, 0.9); border: 3px solid #5d4037; border-radius: 50%; color: white; font-size: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 6px 10px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.2); transition: transform 0.1s, background-color 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .d-pad-btn:active, .d-pad-btn.active { 
+            background-color: rgba(100, 50, 10, 1); transform: scale(0.92) translateY(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        /* 미니게임 2 (단어) */
+        .falling-word {
+            position: absolute; color: white; font-weight: bold; text-shadow: 2px 2px 0 #000; font-size: 1.2rem; white-space: nowrap;
+            transition: top 0.1s linear, left 0.1s linear; 
+            will-change: top, left;
+        }
+        .hp-bar {
+            position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 5px; z-index: 25;
+        }
+        .heart { font-size: 24px; color: red; text-shadow: 0 0 5px white; }
+        
+        #game2-palace-canvas {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); 
+            z-index: 15; opacity: 0.9;
+            width: 120px !important; height: 80px !important;
+        }
+
+        /* 미니게임 3 (퍼즐) */
+        .puzzle-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px; width: 100%; max-width: 320px; 
+            margin: 0 auto; border: 4px solid #5d4037; background: #5d4037; 
+        }
+        .puzzle-tile { 
+            aspect-ratio: 1; 
+            background-color: #fff8e1; 
+            display: flex; align-items: center; justify-content: center; 
+            font-family: 'Gowun Batang', serif; 
+            font-weight: bold; font-size: 1.8rem;
+            cursor: pointer; user-select: none; color: #3e2723;
+            touch-action: manipulation;
+        }
+        .puzzle-tile.empty { opacity: 0; cursor: default; }
+        .puzzle-tile.special {
+            color: #b71c1c;
+            background-color: #ffe0b2;
+            font-size: 1.5rem;
+        }
+
+        /* 미니게임 4 (타자) */
+        #typing-input, #target-text {
+            font-family: 'Gowun Batang', serif; 
+        }
+
+        /* 지문 내 하이라이트 문법 스타일 */
+        .parsed-underline {
+            text-decoration: underline;
+            text-decoration-color: #b45309;
+            text-decoration-thickness: 2px;
+            font-weight: bold;
+        }
+        .parsed-box {
+            display: inline-block; /* 💡 상자가 혼자 줄바꿈되지 않게 텍스트와 나란히 배치 */
+            border: 2px solid #b45309;
+            background-color: #fffbeb;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            margin: 0 0.2rem;
+            vertical-align: middle;
+            min-width: 2.5rem;  /* 💡 내용이 없는 빈칸일 때를 대비한 최소 너비 */
+            min-height: 1.5rem; /* 💡 내용이 없는 빈칸일 때를 대비한 최소 높이 */
+            line-height: 1.4;
+        }
+        .parsed-circle {
+            display: inline-block;
+            border: 2px solid #78350f;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            text-align: center;
+            line-height: 1.3rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #78350f;
+            margin: 0 0.2rem;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- 1. 인트로 화면 -->
+    <!-- 인트로 상자의 가로 폭을 max-w-2xl로 확장하여 줄바꿈을 완화합니다. -->
+    <div id="intro-screen" class="max-w-2xl w-full bg-white/90 rounded-xl shadow-2xl p-8 text-center fade-in wood-border">
+        <div class="mb-4 flex justify-center">
+            <img src="https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTA1MjFfNzYg%2FMDAxNzQ3NzUzNzU5MjQ0.LDpXRWHsFBgQGE1bb_gAKvbWmIkJxgCUn3hh9qhqkN4g.iJdrxdC4S3QhAKOtBv2et-OdigDGk1sZpMqezdVTBxIg.JPEG%2FIMG%25A3%25DF0199.JPG&type=a340" 
+                 alt="왕관" class="w-20 h-20 object-contain drop-shadow-md">
+        </div>
+        <h1 class="text-4xl font-bold mb-2 text-amber-900 serif">세종대왕을 도와<br>훈민정음을 반포하라</h1>
+        <div class="text-sm bg-amber-100 p-2 rounded mb-4 text-amber-800 font-bold">전과목 맞춤형 능력 평가</div>
+        <!-- 텍스트 크기를 text-xl로 키우고, 폰트 두께(font-bold)와 테두리(border)를 추가해 시인성을 높입니다. -->
+        <p class="text-gray-800 mb-6 leading-relaxed text-xl font-bold p-5 bg-amber-50 rounded-lg text-left border border-amber-200">
+            "과인이 백성을 위해 지혜를 모으고자 하나,<br>
+            아직 널리 퍼지지 못하여 근심이 크도다.<br><br>
+            그대가 궐의 학사가 되어<br>
+            <b class="text-amber-900 text-2xl">평가 문제</b>를 풀고 <b class="text-amber-900 text-2xl">미니게임</b>을 통과해<br>
+            비밀 암호를 완성하라!"
+        </p>
+        <input type="text" id="player-name" placeholder="학사 이름 입력" class="w-full p-3 border-2 border-amber-200 rounded-lg mb-4 focus:outline-none focus:border-amber-600 text-center font-bold font-serif bg-white">
+        <button onclick="startGame()" class="w-full bg-amber-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-900 transition duration-300 shadow-lg transform hover:scale-105">
+            입궐 하기 (Start)
+        </button>
+    </div>
+
+    <!-- 2. 메인 게임 화면 (문제 풀이) -->
+    <div id="game-screen" class="hidden-screen max-w-7xl w-full bg-white/95 rounded-xl shadow-2xl overflow-hidden fade-in relative flex flex-col h-[90vh] z-0 wood-border">
+        <div class="bg-amber-800 p-3 text-white shrink-0 z-10 flex justify-between items-center">
+            <div class="font-bold flex items-center gap-2 serif">
+                <span>📜</span> <span id="user-name-display">김학사</span>
+            </div>
+            <div class="bg-amber-900/80 px-3 py-1 rounded-lg text-sm border border-amber-600">
+                암호: <span id="password-slot" class="font-mono font-black text-yellow-400 tracking-widest text-lg ml-1">? ? ? ?</span>
+            </div>
+        </div>
+        <div id="status-bar" class="w-full bg-amber-100 text-amber-800 text-center text-xs py-1 font-bold hidden"></div>
+        <div class="w-full bg-amber-200 h-2"><div id="progress-bar" class="bg-green-600 h-2 transition-all duration-500" style="width: 0%"></div></div>
+
+        <div class="p-6 overflow-y-auto flex-grow bg-[#fffdf5]">
+            <div class="flex flex-col md:flex-row gap-6 h-full">
+                <div class="md:w-1/2 bg-white p-6 rounded border border-amber-200 shadow-inner overflow-y-auto max-h-[40vh] md:max-h-full">
+                    <!-- 타이틀 크기를 기존의 절반 가량인 text-base로 축소하여 밸런스 유지 -->
+                    <h3 class="text-amber-800 text-base font-bold mb-1.5 border-b border-amber-100 pb-1">📖 읽기 자료 / 제시 지문</h3>
+                    <!-- 'serif' 또는 'game-font'(고운바탕) 클래스를 class 속성에 추가 -->
+<div id="passage-text" class="serif text-xl leading-loose text-gray-900 whitespace-pre-wrap text-justify"></div>
+                </div>
+                
+                <div class="md:w-1/2 flex flex-col justify-between h-full">
+                    <!-- 하단 여백(mb-6)을 제거하여 불필요한 늘어짐을 원천 방지 -->
+                    <div id="question-container" class="mb-0">
+                        <!-- 배지 크기도 가시성을 확보하기 위해 text-sm으로 조절 -->
+                        <span id="chapter-badge" class="inline-block bg-amber-100 text-amber-800 text-sm px-3 py-1.5 rounded-full mb-3 font-bold border border-amber-200">1단계</span>
+                        <span class="inline-block bg-gray-100 text-gray-800 text-sm px-3 py-1.5 rounded-full mb-3 font-bold">Q.<span id="q-num">1</span></span>
+                        <!-- 질문 크기를 선택지와 같은 text-xl로 맞추고 여백을 mb-2로 축소 -->
+                        <div id="question-text" class="text-xl font-bold leading-relaxed mb-2 text-gray-900 break-keep serif"></div>
+                        <!-- 보기의 글씨를 text-xl로 키우고 하단 여백을 mb-2로 대폭 축소 -->
+                        <div id="bogi-text" class="serif hidden text-xl leading-loose text-gray-900 bg-white border-2 border-slate-300 p-4 rounded-xl shadow-inner mb-2 whitespace-pre-wrap"></div>
+                    </div>
+                    <div id="interaction-area" class="flex-grow flex flex-col justify-end">
+                        <!-- 2-1. 객관식 선택지 영역 (mt-4 추가) -->
+                        <div id="choices-container" class="space-y-3 pb-4 mt-4"></div>
+
+                        <!-- 2-2. 주관식 입력 영역 (mt-4 추가) -->
+                        <div id="short-answer-container" class="hidden pb-4 space-y-3 mt-4">
+                            <!-- input 폰트를 text-2xl로, 버튼을 text-xl로 확대 -->
+                            <input type="text" id="short-input" class="w-full p-5 border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-700 text-center font-bold text-2xl shadow-sm" placeholder="정답을 입력하세요">
+                            <button onclick="submitShortAnswer()" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-4 rounded-xl transition shadow-lg text-xl">정답 확인하기</button>
+                        </div>
+
+                        <!-- 2-3. 분류하기 게임 영역 -->
+                        <div id="classify-container" class="hidden pb-4 space-y-4">
+                            <div class="grid grid-cols-2 gap-3" id="game-classify-buckets"></div>
+                            <div class="p-3 border-2 border-dashed border-amber-300 rounded-lg bg-white/80">
+                                <p class="text-xs text-amber-900 font-bold text-center mb-2">단어 카드를 누르면 순서대로 상자로 이동합니다.</p>
+                                <div id="game-classify-pool" class="flex flex-wrap gap-2 justify-center"></div>
+                            </div>
+                            <button onclick="submitClassifyAnswer()" class="w-full bg-amber-700 text-white font-bold py-3 rounded-lg hover:bg-amber-800 transition shadow-lg text-base">분류 완료 및 제출</button>
+                        </div>
+
+                        <!-- 2-4. 선으로 잇기 영역 -->
+                        <div id="connect-container" class="hidden pb-4 space-y-4">
+                            <div class="border border-amber-200 bg-white p-4 rounded-lg relative">
+                                <div class="flex justify-between items-center gap-2">
+                                    <div class="space-y-2 flex-1" id="game-connect-left-list"></div>
+                                    <div class="w-12 h-full flex flex-col justify-around items-center text-amber-800" id="game-connect-mid">
+                                    </div>
+                                    <div class="space-y-2 flex-1 text-right" id="game-connect-right-list"></div>
+                                </div>
+                            </div>
+                            <p class="text-center text-xs text-amber-800 font-semibold" id="game-connect-status">왼쪽 항목을 선택한 후 알맞은 오른쪽 항목을 터치하세요.</p>
+                            <button onclick="submitConnectAnswer()" class="w-full bg-amber-700 text-white font-bold py-3 rounded-lg hover:bg-amber-800 transition shadow-lg text-base">연결 매칭 및 제출</button>
+                        </div>
+
+                        <!-- 2-5. 순서배치 영역 -->
+                        <div id="sequence-container" class="hidden pb-4 space-y-4">
+                            <div id="game-sequence-pool" class="flex flex-wrap gap-2 justify-center py-3 border-2 border-dashed border-amber-300 rounded bg-white/80"></div>
+                            <p class="text-center font-bold text-amber-900 text-xs">⬇️ 임시 배치 순서 (카드를 누르면 다시 취소됩니다)</p>
+                            <div id="game-sequence-result" class="min-h-[50px] flex flex-wrap gap-2 justify-center items-center bg-amber-50 p-3 rounded border border-amber-300"></div>
+                            <button onclick="submitSequenceAnswer()" class="w-full bg-amber-700 text-white font-bold py-3 rounded-lg hover:bg-amber-800 transition shadow-lg text-base">순서 배치 및 제출</button>
+                        </div>
+
+                        <!-- ⚠️ 2-6. 미지원/폴백(Fallback) 안전장치 영역 -->
+                        <div id="fallback-container" class="hidden pb-4 space-y-3">
+                            <div class="bg-red-50 border border-red-200 p-3 rounded-lg text-center text-xs text-red-700 font-semibold">
+                                ⚠️ 시스템 보존 모드: 인식되지 않는 새로운 유형의 문제이므로 긴급 주관식 채점형으로 자동 안전 전환되었습니다.
+                            </div>
+                            <input type="text" id="fallback-input" class="w-full p-4 border-2 border-red-300 rounded-lg focus:outline-none focus:border-red-600 text-center font-bold text-lg shadow-sm" placeholder="답안을 주관식으로 입력하세요">
+                            <button onclick="submitFallbackAnswer()" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition shadow-lg text-base">비밀 답안 확인</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 스토리 & 보상 모달 -->
+    <div id="story-modal" class="hidden-screen fixed inset-0 bg-black/90 flex items-center justify-center z-[110] p-4 backdrop-blur-sm">
+        <!-- 모달 내용물의 가로 폭을 max-w-2xl로 넉넉하게 키워 큰 대사를 한눈에 읽기 쉽게 만듭니다. -->
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden border-4 border-amber-600 animate-bounce-in">
+            <div class="bg-amber-600 p-3 flex items-center justify-center gap-2 font-bold text-white text-lg serif">
+                <span class="text-2xl">📢</span> <span id="modal-header-text">어명(御命)</span>
+            </div>
+            <div class="p-6 text-center">
+                <h3 id="story-title" class="text-xl font-black mb-4 text-gray-800 serif"></h3>
+                <div class="bg-amber-50 p-4 rounded-lg mb-4 text-left border border-amber-200">
+                    <!-- 대사 글씨 크기를 text-xl로 확대 -->
+                    <p id="story-content" class="text-gray-700 leading-relaxed text-xl whitespace-pre-wrap font-bold"></p>
+                </div>
+                
+                <div id="story-reward" class="hidden bg-yellow-50 border-2 border-yellow-200 p-3 rounded-lg mb-4">
+                    <p class="text-xs text-amber-600 font-bold mb-1">🎁 암호 조각 획득!</p>
+                    <div class="text-4xl font-black text-red-600 tracking-widest serif" id="story-code-piece">?</div>
+                </div>
+
+                <button id="story-btn" onclick="closeStory()" class="w-full bg-amber-700 text-white font-bold py-3 rounded-lg hover:bg-amber-800 transition shadow-lg">
+                    받들겠사옵니다
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 피드백 모달 -->
+    <div id="feedback-modal" class="hidden-screen fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-4">
+        <!-- 정/오답 팝업창 폭을 max-w-xl로 한 단계 더 넓게 확장합니다. -->
+        <div class="bg-white rounded-2xl max-w-xl w-full p-8 text-center shadow-2xl wood-border">
+            <div id="feedback-icon" class="text-6xl mb-4"></div>
+            <!-- 제목 폰트를 text-2xl로 확대 -->
+            <h2 id="feedback-title" class="text-2xl font-bold mb-3 serif"></h2>
+            <!-- 안내 메시지 폰트를 text-xl로 확대 -->
+            <p id="feedback-message" class="text-xl text-gray-600 mb-6 font-semibold"></p>
+            <!-- 버튼 크기도 text-xl 및 패딩(py-3) 추가 -->
+            <button onclick="nextStep()" class="w-full bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-800 text-xl">
+                다음으로
+            </button>
+        </div>
+    </div>
+
+    <!-- 5. 미니게임 컨테이너들 -->
+
+    <!-- Game 1: Runner -->
+    <div id="game1-screen" class="hidden-screen fixed inset-0 bg-sky-100 z-[100] flex flex-col items-center justify-center p-4" style="background-color: #f5f5dc;">
+        <h2 class="text-3xl font-bold text-amber-900 mb-2 serif">🏃  세종대왕을 찾아서</h2>
+        <p class="text-gray-600 mb-4 text-sm text-center">"맹수들을 피해 2000m를 달려 세종대왕님을 알현하라!"</p>
+        <div class="relative w-full max-w-[640px]">
+            <canvas id="runner-canvas" width="640" height="360" class="w-full h-auto border-4 border-amber-800 rounded shadow-lg"></canvas>
+            <div id="runner-overlay" class="absolute inset-0 flex items-center justify-center bg-black/60 rounded backdrop-blur-sm hidden">
+                <div class="text-center text-white">
+                     <p class="text-6xl mb-4 animate-bounce">🏃‍♂️</p>
+                    <p class="text-6xl font-bold" id="runner-countdown-text">3</p>
+                    <p class="text-xl mt-2">잠시 후 시작됩니다...</p>
+                </div>
+            </div>
+            <div id="runner-msg-overlay" class="absolute inset-0 flex items-center justify-center bg-black/80 rounded cursor-pointer hidden backdrop-blur-sm">
+                 <div id="runner-msg-content" class="text-center text-white px-6 w-full"></div>
+            </div>
+        </div>
+        <p id="runner-dist" class="text-amber-900 mt-4 font-bold font-mono text-xl">남은 거리: 2000m</p>
+        <div class="d-pad-container">
+             <div class="d-pad-btn" id="btn-left">⬅️</div>
+             <div class="d-pad-btn bg-red-700" id="btn-jump" style="background-color: rgba(183, 28, 28, 0.9);">⬆️</div>
+             <div class="d-pad-btn" id="btn-right">➡️</div>
+        </div>
+    </div>
+
+    <!-- Game 2: Word Defense -->
+    <div id="game2-screen" class="hidden-screen fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center justify-center p-4">
+        <h2 class="text-2xl font-bold text-yellow-400 mb-2 serif">🛡️  집현전 수호 작전</h2>
+        <p class="text-gray-300 mb-4 text-sm text-center">"틀리기 쉬운 단어를 입력하여 집현전을 지켜라!<br>(단어가 지그재그로 내려옵니다)"</p>
+        
+        <div class="relative w-full max-w-[400px] h-[500px] bg-gray-800 border-4 border-gray-600 rounded-lg overflow-hidden">
+            <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(white 1px, transparent 1px); background-size: 20px 20px;"></div>
+            <div id="word-rain-area" class="w-full h-full relative z-10"></div>
+            <div class="hp-bar" id="game2-hp-bar">
+                <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+            </div>
+            <canvas id="game2-palace-canvas" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-0 opacity-80" width="120" height="80"></canvas>
+            <div class="absolute bottom-0 w-full p-2 bg-gray-700 z-20">
+                <input type="text" id="word-input" class="w-full p-2 text-center text-black font-bold rounded" placeholder="단어 입력" autocomplete="off">
+            </div>
+            <div id="game2-overlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center hidden z-30">
+                <p class="text-4xl mb-4">🔥</p>
+                <h3 class="text-2xl text-red-500 font-bold mb-2">집현전 함락!</h3>
+                <p class="text-white text-sm">3초 후 다시 시작합니다...</p>
+            </div>
+            <div id="game2-story-overlay" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-40">
+                <!-- 안내 모달 폭을 max-w-xl로 확대하고 내부 패딩도 p-8로 여유를 줍니다. -->
+                <div class="bg-white max-w-xl w-full p-8 rounded-lg text-center border-4 border-amber-600">
+                    <p class="text-6xl mb-4">🛡️</p>
+                    <h3 class="text-2xl font-bold text-amber-900 mb-3 serif">어명: 집현전을 사수하라</h3>
+                    <!-- 노란색 배경 박스 통일 적용 및 텍스트 크기(text-xl), 굵기(font-bold) 확대 -->
+                    <p class="text-gray-800 mb-6 leading-relaxed text-xl font-bold whitespace-pre-wrap bg-amber-50 p-4 rounded-lg border border-amber-200">"집현전 학사들이여!<br>잘못된 맞춤법의 화살이 날아들고 있다.<br>훈민정음의 요람인 집현전을 반드시 지켜내라!"</p>
+                    <button onclick="startWordGameReal()" class="w-full bg-amber-700 text-white font-bold py-4 rounded-lg hover:bg-amber-800 transition shadow-lg text-xl">명 받들겠나이다!</button>
+                </div>
+            </div>
+        </div>
+        <p id="word-score" class="text-white mt-4 font-mono text-xl">남은 단어: 10</p>
+    </div>
+
+    <!-- Game 3: Puzzle -->
+    <div id="game3-screen" class="hidden-screen fixed inset-0 bg-[#3e2723] z-[100] flex flex-col items-center justify-center p-4">
+        <h2 class="text-2xl font-bold text-amber-100 mb-2 serif">🧩  자음 체계 복원</h2>
+        <p class="text-amber-200 mb-4 text-sm text-center">"쌍자음을 제외한 자음과 '완성' 타일을 순서대로 정렬하라!<br>(ㄱ ㄴ ㄷ ... ㅎ 완성)"</p>
+        <div class="puzzle-container relative">
+            <div id="puzzle-board" class="puzzle-grid mb-4" style="grid-template-columns: repeat(4, 1fr);"></div>
+        </div>
+        <p id="puzzle-status" class="text-amber-300 text-sm font-mono mb-4 animate-pulse">터치하여 조각 이동 (빈 칸: 1개)</p>
+        <button onclick="shufflePuzzle()" class="bg-amber-800 hover:bg-amber-900 text-white font-bold py-2 px-6 rounded-lg shadow-lg mt-2">
+            다시 섞기
+        </button>
+    </div>
+
+    <!-- Game 4: Typing -->
+    <div id="game4-screen" class="hidden-screen fixed inset-0 bg-blue-900 z-[100] flex flex-col items-center justify-center p-4">
+        <h2 class="text-2xl font-bold text-white mb-2 serif">⌨️  훈민정음 서문 완성</h2>
+        <p class="text-blue-200 mb-4 text-sm text-center">"마지막 관문이다. 정확히 입력하라!"</p>
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg text-center relative">
+            <div id="typing-timer-display" class="text-2xl font-bold text-red-600 mb-2">남은 시간: <span id="typing-timer-val">10</span>초</div>
+            <div class="bg-gray-100 p-4 rounded mb-4 font-bold text-gray-800 break-keep select-none leading-relaxed text-lg" id="target-text" style="font-family: 'Gowun Batang', serif;">
+                나랏말싸미 듕국에 달아 문자와로 서르 사맛디 아니할쎄
+            </div>
+            <textarea id="typing-input" class="w-full p-3 border-2 border-blue-500 rounded focus:outline-none resize-none text-center font-bold text-lg" rows="3" placeholder="여기 클릭하여 입력 시작..." oninput="checkTyping()" style="font-family: 'Gowun Batang', serif;"></textarea>
+            <p id="typing-msg" class="text-red-500 font-bold mt-2 h-6"></p>
+            
+            <div id="typing-retry-area" class="hidden mt-2">
+                <button onclick="startTypingGame()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded shadow animate-bounce">
+                    재도전 (시간 연장)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Code Input & Ending -->
+    <!-- 모달의 전체 폭을 max-w-lg로 조금 더 늘렸습니다. -->
+    <div id="code-input-screen" class="hidden-screen max-w-lg w-full bg-white rounded-xl shadow-2xl p-8 text-center fade-in wood-border z-[130]">
+        <div class="mb-4 text-6xl">🔐</div>
+        <h2 class="text-3xl font-bold text-amber-900 mb-3 serif">최종 관문</h2>
+        <!-- 대사 글씨 크기를 text-xl로 키우고 굵게 적용 -->
+        <p class="text-gray-800 mb-6 leading-relaxed text-xl font-bold p-4 bg-amber-50 rounded-lg border border-amber-200">
+            "지금까지 모은 <b class="text-amber-950 text-2xl">4자리 비밀번호</b>를 대라."
+        </p>
+        <div class="flex justify-center gap-2 mb-6">
+            <input type="tel" id="final-code-input" maxlength="4" placeholder="0000" class="w-full text-center text-4xl font-mono tracking-[0.5em] bg-gray-100 border-2 border-amber-800 rounded-lg py-4 focus:outline-none font-bold">
+        </div>
+        <!-- 버튼 크기도 text-xl 및 패딩 확대 -->
+        <button id="btn-check-code" onclick="checkFinalCode()" class="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-4 rounded-lg transition shadow-lg text-xl">명백히 확인하겠사옵니다</button>
+        
+        <div id="code-error-area" class="hidden mt-4">
+             <p class="text-red-600 font-bold mb-4 animate-bounce">⛔ 암호가 틀렸습니다!</p>
+             <div class="flex gap-2 justify-center">
+                <button onclick="retryCode()" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 rounded-lg text-sm">다시 입력하기</button>
+                <button onclick="resetToTitle()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-lg text-sm">처음으로 돌아가기</button>
+             </div>
+        </div>
+    </div>
+
+    <!-- 모달 전체 가로폭을 max-w-xl로 조금 더 여유롭게 조절했습니다. -->
+    <div id="ending-screen" class="hidden-screen max-w-xl w-full bg-white rounded-xl shadow-2xl p-8 text-center wood-border fade-in">
+        <div class="mb-4 text-7xl animate-pulse">🎆</div>
+        <!-- 타이틀 크기를 text-4xl로 상승 -->
+        <h1 class="text-4xl font-black mb-4 text-amber-900 serif">임무 완수!</h1>
+        <!-- 대사 글씨 크기 text-xl, 행간 leading-loose, 폰트 두께 및 컬러를 선명하게 조절 -->
+        <p class="text-gray-800 mb-6 leading-loose text-xl font-bold p-5 bg-amber-50/50 rounded-lg border border-amber-200">
+            장하다, <span id="ending-name" class="font-bold text-blue-600 text-2xl"></span> 학사!<br>
+            그대의 노력으로 훈민정음이 온 세상에 퍼졌도다.<br>
+            이제 백성들이 자유롭게 글을 쓰고 읽게 되었으니,<br>
+            이 공을 역사에 길이 남기리라!
+        </p>
+        <div class="bg-amber-50 p-6 rounded-lg mb-6 border border-amber-200">
+            <!-- 안내 라벨을 text-lg로 확대 -->
+            <p class="text-lg text-amber-800 font-bold mb-2">🔑 최종 암호</p>
+            <div class="text-5xl font-mono font-black text-red-700 tracking-[0.5em]">1009</div>
+        </div>
+        <!-- 처음으로 돌아가기 버튼을 py-4 및 text-xl로 맞춤 교환 -->
+        <button onclick="resetToTitle()" class="w-full bg-gray-700 text-white font-bold py-4 px-6 rounded-lg hover:bg-gray-800 transition text-xl shadow-lg">처음으로 돌아가기 (Restart)</button>
+    </div>
+
+    <script>
+        // === 보안 패치: 우클릭 및 개발자 도구 방지 ===
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F12' || 
+                (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J' || event.key === 'C')) || 
+                (event.ctrlKey && event.key === 'U')) {
+                event.preventDefault();
+            }
+        });
+
+        // ==========================================
+        // 🛠️ [임포터 허브] 임포트용 통합 문제 데이터베이스
+        // ==========================================
+        const QUESTION_DATABASE = [
+          {
+                    "type": "short",
+                    "passage": "",
+                    "bogi": "| [center]<보기>[/center] |\n|---|\n| ㉠ 인물이 추구하는 가치를 파악하면 이야기의 주제를 잘 이해할 수 있다.<br>㉡ 시대적 상황이 달라져도 인물들이 추구하는 가치는 변함없다는 것을 알 수 있다.<br>㉢ 인물이 추구하는 가치를 파악하며 문학 작품을 읽으면 인물이 추구하는 가치와 내가 추구하는 가치를 비교할 수 있다. |\n[right][/right]",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "1. <보기>에서 옳지 [u]않은[/u] 설명을 찾아 기호를 쓰시오.",
+                    "a": [
+                              "ㄴ"
+                    ],
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "2. 문단 수준에서 영화 감상문을 고쳐 쓰는 방법에 대해 바르게 설명한 것을 고르시오.",
+                    "choices": [
+                              "주어와 서술어가 알맞게 어울리는지 점검한다.",
+                              "영화 제목이 글의 내용을 잘 드러내는지 확인한다.",
+                              "문단마다 띄어쓰기와 맞춤법이 맞는지 확인한다.",
+                              "영화의 줄거리를 무조건 더 길게 보충하여 문단의 분량을 늘린다.",
+                              "각 문단의 중심 내용이 무엇인지 생각하고, 관련 없는 문장은 없는지 살펴본다."
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[3 ~ 4] 다음 글을 읽고 물음에 답하시오.\n| [center]「나를 지키는 자연스러운 감정, 불안」[/center]<br>     <br>㈎ 사람은 불안한 감정을 느낄 수 있는데, 불안한 감정이라는 것은 중요한 시험을 앞두고 있거나 새로운 사람들을 만나거나 여러 사람 앞에서 이야기해야 할 때 불안한 감정을 느끼는 것이고 그런 불안한 감정은 사람들이 누구나 경험하는 것이고, 마음이 조마조마하고 불편한 그런 느낌이 드는 것이 바로 불안한 감정이에요.<br>     <br>불안할 때 몸은 여러 가지 반응을 보여요. ㉠[u]한가지에 집중을 못 하거나 머리가 어지럽기도 해요 .[/u] 때로 숨이 가빠지거나 몸에 열이 나고 배가 아프기도 해요. 불안할 때 몸이 불편해지는 것은 우리 마음과 몸이 연결되어 있다는 것을 알려 주는 신호이기도 해요. |\n|---|\n| 하지만 불안이 항상 나쁜 것은 아니에요. 불안 덕분에 우리는 미리 대비할 수 있어요. 과제를 마쳐야 한다는 불안 때문에 노는 것을 미루고 과제를 다 하기도 하고 불안한 상황을 해결하려고 더 노력하기도 해요. 이처럼 불안은 “조심해!”라고 경고하는 감정이에요. 불안한 감정 덕분에 우리는 더 잘 준비하고 더 좋은 결과를 얻으려고 노력하죠.<br>     <br>불안이 너무 크게 느껴져서 불편하면 어떻게 할까요? 그럴 때에는 심호흡을 해 보세요. 천천히 깊게 숨을 들이마시고 내쉬는 거죠. 이렇게 하면 우리 몸에서 안정감을 느끼게 하는 신경이 자극되어 불안한 마음이 조금씩 사라질 수 있어요.<br>     <br>이처럼 불안은 우리가 안 좋은 일을 겪을 것 같을 때 우리를 지켜 주는 자연스러운 감정이에요. 그러므로 불안을 부정적으로만 보지 않고 이를 잘 이해하고 다스리는 방법을 찾아야 해요. |\n|---|",
+                    "bogi": "| [u]한가지[/u]에 [u]집중을[/u] 못 [u]하거나 머리가[/u] 어지럽[u]기도[/u] 해요. |\n|---|",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "3. ㉠에서 띄어 써야 하는 부분을 찾아 고르시오.",
+                    "choices": [
+                              "한가지",
+                              "집중을",
+                              "하거나",
+                              "머리가",
+                              "어지럽기도"
+                    ],
+                    "a": 0,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[3 ~ 4] 다음 글을 읽고 물음에 답하시오.\n| [center]「나를 지키는 자연스러운 감정, 불안」[/center]<br>     <br>㈎ 사람은 불안한 감정을 느낄 수 있는데, 불안한 감정이라는 것은 중요한 시험을 앞두고 있거나 새로운 사람들을 만나거나 여러 사람 앞에서 이야기해야 할 때 불안한 감정을 느끼는 것이고 그런 불안한 감정은 사람들이 누구나 경험하는 것이고, 마음이 조마조마하고 불편한 그런 느낌이 드는 것이 바로 불안한 감정이에요.<br>     <br>불안할 때 몸은 여러 가지 반응을 보여요. ㉠[u]한가지에 집중을 못 하거나 머리가 어지럽기도 해요 .[/u] 때로 숨이 가빠지거나 몸에 열이 나고 배가 아프기도 해요. 불안할 때 몸이 불편해지는 것은 우리 마음과 몸이 연결되어 있다는 것을 알려 주는 신호이기도 해요. |\n|---|\n| 하지만 불안이 항상 나쁜 것은 아니에요. 불안 덕분에 우리는 미리 대비할 수 있어요. 과제를 마쳐야 한다는 불안 때문에 노는 것을 미루고 과제를 다 하기도 하고 불안한 상황을 해결하려고 더 노력하기도 해요. 이처럼 불안은 “조심해!”라고 경고하는 감정이에요. 불안한 감정 덕분에 우리는 더 잘 준비하고 더 좋은 결과를 얻으려고 노력하죠.<br>     <br>불안이 너무 크게 느껴져서 불편하면 어떻게 할까요? 그럴 때에는 심호흡을 해 보세요. 천천히 깊게 숨을 들이마시고 내쉬는 거죠. 이렇게 하면 우리 몸에서 안정감을 느끼게 하는 신경이 자극되어 불안한 마음이 조금씩 사라질 수 있어요.<br>     <br>이처럼 불안은 우리가 안 좋은 일을 겪을 것 같을 때 우리를 지켜 주는 자연스러운 감정이에요. 그러므로 불안을 부정적으로만 보지 않고 이를 잘 이해하고 다스리는 방법을 찾아야 해요. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "4. 문단 ㈎를 고쳐 쓸 때, 고쳐 써야 할 점으로 가장 적절한 것을 고르시오.",
+                    "choices": [
+                              "제목이 글의 내용을 잘 드러내도록 고쳐 쓴다.",
+                              "겹치는 표현을 늘려 글의 내용을 반복하고 강조한다.",
+                              "지나치게 긴 문장을 이해하기 쉽게 적절히 구분한다.",
+                              "문단의 중심 내용을 바꾸어 새로운 내용을 추가한다.",
+                              "글 전체의 결론이 잘 드러나도록 마지막 문장을 고친다."
+                    ],
+                    "a": 2,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "| (1) | [center]찬성 측 주장 펼치기[/center] |\n|---|---|\n| (2) | [center]반대 측 주장 펼치기[/center] |\n| (3) |  |\n| (4) |  |\n| (5) |  |\n| (6) |  |\n| (7) | [center]판정단의 판정 결과 발표하기[/center] |\n\n| [center]보기[/center] |\n|---|\n| ㉠ 찬성 측 주장 다지기<br>㉡ 반대 측 반론하고 찬성 측 답변하기<br>㉢ 반대 측 주장 다지기<br>㉣ 찬성 측 반론하고 반대 측 답변하기 |",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "5. 빈칸에 들어갈 토론의 순서를 바르게 나열한 것을 고르시오.",
+                    "align": {
+                              "passage": "left",
+                              "bogi": "center"
+                    },
+                    "choices": [
+                              "㉠-㉡-㉣-㉢",
+                              "㉠-㉣-㉡-㉢",
+                              "㉡-㉠-㉣-㉢",
+                              "㉡-㉣-㉠-㉢",
+                              "㉢-㉣-㉠-㉡"
+                    ],
+                    "a": 3
+          },
+          {
+                    "type": "choice",
+                    "passage": "[6 ~ 9] 다음 글을 읽고 물음에 답하시오.\n| (가)<br>인공 지능 개발의 핵심은 윤리성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 윤리성을 먼저 고려해야 합니다. 오늘날 인공 지능은 정보 검색, 콘텐츠 제작, 자율 주행과 같은 여러 분야에서 활용되며 우리 삶을 빠르게 변화시키고 있습니다. 문제는 변화 속도가 너무 빨라 윤리적인 문제를 충분히 고민하지 못한다는 점입니다. 인공 지능 개발 과정에서 윤리적인 문제를 깊이 있게 고려해야 합니다. 인공 지능 개발 속도에만 집중하고 윤리성을 간과한다면, 인공 지능은 인류에게 재앙이 될 수 있습니다.<br> 인공 지능 때문에 발생하는 윤리적 문제는 다양합니다. 먼저, 저작권 침해 문제를 들수 있습니다. 인공 지능이 저작물을 허락 없이 모방해 저작권을 침해할 수 있습니다. 인공 지능이 만든 결과물을 자신의 창작물인 것처럼 속이는 사람도 있습니다. 인공 지능을 이용한 사이버 범죄 및 악용 문제도 심각합니다. 최근 발표된 경찰청의 통계 자료를 보면, 인공 지능을 이용해 특정 인물의 얼굴이나 목소리를 조작하는 인공 지능 기반 이미지 합성 범죄가 빠르게 증가하고 있습니다.<br> 이처럼 인공 지능을 악용하는 사례가 늘고 있으므로, 인공 지능을 개발할 때에는 윤리성을 가장 중요하게 생각해야 합니다. 개발 단계에서부터 인공 지능이 악의적으로사용되지 않고 안전성을 갖추도록 하는 방안을 마련해야 합니다. 또 인공 지능 개발자들이 윤리성과 안전성을 중요하게 생각하는 개발 문화를 만들어 가야 합니다. 인공 지능 개발과 활용 과정에서 차별이나 불공정한 일이 발생하지 않도록 노력할 필요도 있습니다. 윤리적 관점에서 인공 지능 기술을 충분히 검토하여 개발한다면, 인공 지능 개발의 부작용을 상당 부분 줄일 수 있고 인공 지능을 인류를 위한 긍정적인 도구로 발전시킬 수 있을 것입니다.<br>     <br>(나)<br>인공 지능 개발의 핵심은 효율성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 효율성을 먼저 고려해야 합니다. 오늘날 인공 지능기술은 자율 주행, 의료 진단, 재난 대응과 같이 다양한 분야에서 활용되며 인류의 삶을 혁신적으로 발전시키고 있습니다. 인공 지능 개발은 인류의 번영과 행복한 미래를위한 필연적인 선택입니다. 인공 지능 기술의 잠재력을 최대한 이끌어 내고 사회 전반에서 큰 이득을 얻기 위해서는, 개발 속도를 늦추지 않고 효율성을 최우선으로 생각하며 인공 지능 기술을 개발하고 지원해야 합니다.<br> 인공 지능 개발에서 효율성을 우선하면 여러 가지 이점이 있습니다. 인공 지능 개발에 걸리는 시간이 줄어 새로운 기술을 더 빠르게 개발하고 도입할 수 있습니다. 개발자들이 창의적인 아이디어로 기술 개발에 도전할 수 있어, 이전에 없던 새로운 인공 지능기술이 등장할 가능성도 커집니다. 기업들도 인공 지능 개발에 적극적으로 나설 수 있으며, 이는 우리나라가 인공 지능 분야에서 경쟁력을 갖추는 데 도움이 됩니다.<br> 최근 국내 기업 500곳을 대상으로 한 설문 조사를 보면, 기업의 78.4퍼센트가 성과 향상을 위해 인공 지능 기술이 필요하다고 답했습니다. 인공 지능 기술을 사용하는 기업의 86.3퍼센트는 앞으로 인공 지능 기술을 더 도입할 계획이라고 밝혔습니다. 이러한 기업들의 요구에 부응하기 위해서는 효율성에 초점을 두고 인공 지능을 빠르게 개발해 산업에 널리 활용할 필요가 있습니다.<br>인공 지능 기술은 이제 본격적으로 발전하기 시작한 단계에 있습니다. 기술 오류와 같은 문제가 발생할 수 있지만, 인류는 과거에도 새로운 기술이 등장할 때마다 이러한 문제들을 해결하며 발전해 왔습니다. 인공 지능과 관련 있는 문제들을 점검하고 해결하려는 노력은 필요하지만, 인공 지능 개발 속도를 늦출 필요는 없습니다. 오히려 더 완벽하고 발전된 기술로 개발될 수 있도록 인공 지능 연구에 대한 지원을 확대하고 개발자들이 자율적으로 혁신할 수 있는 환경을 만들어야 합니다. 인공 지능 산업을 효율성에 초점을 맞추어 지원하고 발전시켜 나간다면, 우리 사회 전반에 걸쳐 큰 이득을 가져올 수 있을 것입니다. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "6. 글 (가)와 글 (나)가 공통으로 다루고 있는 주제는 무엇인가요?",
+                    "choices": [
+                              "인공 지능 개발",
+                              "인공 지능의 역사",
+                              "인공 지능을 활용한 직업의 변화",
+                              "학교 급식의 질을 향상시키는 방법",
+                              "청소년의 스마트 기기 사용 시간 문제"
+                    ],
+                    "a": 0,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[6 ~ 9] 다음 글을 읽고 물음에 답하시오.\n| (가)<br>인공 지능 개발의 핵심은 윤리성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 윤리성을 먼저 고려해야 합니다. 오늘날 인공 지능은 정보 검색, 콘텐츠 제작, 자율 주행과 같은 여러 분야에서 활용되며 우리 삶을 빠르게 변화시키고 있습니다. 문제는 변화 속도가 너무 빨라 윤리적인 문제를 충분히 고민하지 못한다는 점입니다. 인공 지능 개발 과정에서 윤리적인 문제를 깊이 있게 고려해야 합니다. 인공 지능 개발 속도에만 집중하고 윤리성을 간과한다면, 인공 지능은 인류에게 재앙이 될 수 있습니다.<br> 인공 지능 때문에 발생하는 윤리적 문제는 다양합니다. 먼저, 저작권 침해 문제를 들수 있습니다. 인공 지능이 저작물을 허락 없이 모방해 저작권을 침해할 수 있습니다. 인공 지능이 만든 결과물을 자신의 창작물인 것처럼 속이는 사람도 있습니다. 인공 지능을 이용한 사이버 범죄 및 악용 문제도 심각합니다. 최근 발표된 경찰청의 통계 자료를 보면, 인공 지능을 이용해 특정 인물의 얼굴이나 목소리를 조작하는 인공 지능 기반 이미지 합성 범죄가 빠르게 증가하고 있습니다.<br> 이처럼 인공 지능을 악용하는 사례가 늘고 있으므로, 인공 지능을 개발할 때에는 윤리성을 가장 중요하게 생각해야 합니다. 개발 단계에서부터 인공 지능이 악의적으로사용되지 않고 안전성을 갖추도록 하는 방안을 마련해야 합니다. 또 인공 지능 개발자들이 윤리성과 안전성을 중요하게 생각하는 개발 문화를 만들어 가야 합니다. 인공 지능 개발과 활용 과정에서 차별이나 불공정한 일이 발생하지 않도록 노력할 필요도 있습니다. 윤리적 관점에서 인공 지능 기술을 충분히 검토하여 개발한다면, 인공 지능 개발의 부작용을 상당 부분 줄일 수 있고 인공 지능을 인류를 위한 긍정적인 도구로 발전시킬 수 있을 것입니다.<br>     <br>(나)<br>인공 지능 개발의 핵심은 효율성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 효율성을 먼저 고려해야 합니다. 오늘날 인공 지능기술은 자율 주행, 의료 진단, 재난 대응과 같이 다양한 분야에서 활용되며 인류의 삶을 혁신적으로 발전시키고 있습니다. 인공 지능 개발은 인류의 번영과 행복한 미래를위한 필연적인 선택입니다. 인공 지능 기술의 잠재력을 최대한 이끌어 내고 사회 전반에서 큰 이득을 얻기 위해서는, 개발 속도를 늦추지 않고 효율성을 최우선으로 생각하며 인공 지능 기술을 개발하고 지원해야 합니다.<br> 인공 지능 개발에서 효율성을 우선하면 여러 가지 이점이 있습니다. 인공 지능 개발에 걸리는 시간이 줄어 새로운 기술을 더 빠르게 개발하고 도입할 수 있습니다. 개발자들이 창의적인 아이디어로 기술 개발에 도전할 수 있어, 이전에 없던 새로운 인공 지능기술이 등장할 가능성도 커집니다. 기업들도 인공 지능 개발에 적극적으로 나설 수 있으며, 이는 우리나라가 인공 지능 분야에서 경쟁력을 갖추는 데 도움이 됩니다.<br> 최근 국내 기업 500곳을 대상으로 한 설문 조사를 보면, 기업의 78.4퍼센트가 성과 향상을 위해 인공 지능 기술이 필요하다고 답했습니다. 인공 지능 기술을 사용하는 기업의 86.3퍼센트는 앞으로 인공 지능 기술을 더 도입할 계획이라고 밝혔습니다. 이러한 기업들의 요구에 부응하기 위해서는 효율성에 초점을 두고 인공 지능을 빠르게 개발해 산업에 널리 활용할 필요가 있습니다.<br>인공 지능 기술은 이제 본격적으로 발전하기 시작한 단계에 있습니다. 기술 오류와 같은 문제가 발생할 수 있지만, 인류는 과거에도 새로운 기술이 등장할 때마다 이러한 문제들을 해결하며 발전해 왔습니다. 인공 지능과 관련 있는 문제들을 점검하고 해결하려는 노력은 필요하지만, 인공 지능 개발 속도를 늦출 필요는 없습니다. 오히려 더 완벽하고 발전된 기술로 개발될 수 있도록 인공 지능 연구에 대한 지원을 확대하고 개발자들이 자율적으로 혁신할 수 있는 환경을 만들어야 합니다. 인공 지능 산업을 효율성에 초점을 맞추어 지원하고 발전시켜 나간다면, 우리 사회 전반에 걸쳐 큰 이득을 가져올 수 있을 것입니다. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "7. 글 (가)의 주장으로 알맞은 것은?",
+                    "choices": [
+                              "인공 지능은 효율성을 중심으로 개발해야 한다.",
+                              "인공 지능은 기술 오류가 있어도 계속 사용해야 한다.",
+                              "인공 지능을 개발할 때는 윤리성을 먼저 고려해야 한다.",
+                              "인공 지능 기술은 기업의 경쟁력을 높이는 데 가장 중요하다.",
+                              "인공 지능은 개발 속도를 늦추지 말고 빠르게 발전시켜야 한다."
+                    ],
+                    "a": 2,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[6 ~ 9] 다음 글을 읽고 물음에 답하시오.\n| (가)<br>인공 지능 개발의 핵심은 윤리성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 윤리성을 먼저 고려해야 합니다. 오늘날 인공 지능은 정보 검색, 콘텐츠 제작, 자율 주행과 같은 여러 분야에서 활용되며 우리 삶을 빠르게 변화시키고 있습니다. 문제는 변화 속도가 너무 빨라 윤리적인 문제를 충분히 고민하지 못한다는 점입니다. 인공 지능 개발 과정에서 윤리적인 문제를 깊이 있게 고려해야 합니다. 인공 지능 개발 속도에만 집중하고 윤리성을 간과한다면, 인공 지능은 인류에게 재앙이 될 수 있습니다.<br> 인공 지능 때문에 발생하는 윤리적 문제는 다양합니다. 먼저, 저작권 침해 문제를 들수 있습니다. 인공 지능이 저작물을 허락 없이 모방해 저작권을 침해할 수 있습니다. 인공 지능이 만든 결과물을 자신의 창작물인 것처럼 속이는 사람도 있습니다. 인공 지능을 이용한 사이버 범죄 및 악용 문제도 심각합니다. 최근 발표된 경찰청의 통계 자료를 보면, 인공 지능을 이용해 특정 인물의 얼굴이나 목소리를 조작하는 인공 지능 기반 이미지 합성 범죄가 빠르게 증가하고 있습니다.<br> 이처럼 인공 지능을 악용하는 사례가 늘고 있으므로, 인공 지능을 개발할 때에는 윤리성을 가장 중요하게 생각해야 합니다. 개발 단계에서부터 인공 지능이 악의적으로사용되지 않고 안전성을 갖추도록 하는 방안을 마련해야 합니다. 또 인공 지능 개발자들이 윤리성과 안전성을 중요하게 생각하는 개발 문화를 만들어 가야 합니다. 인공 지능 개발과 활용 과정에서 차별이나 불공정한 일이 발생하지 않도록 노력할 필요도 있습니다. 윤리적 관점에서 인공 지능 기술을 충분히 검토하여 개발한다면, 인공 지능 개발의 부작용을 상당 부분 줄일 수 있고 인공 지능을 인류를 위한 긍정적인 도구로 발전시킬 수 있을 것입니다.<br>     <br>(나)<br>인공 지능 개발의 핵심은 효율성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 효율성을 먼저 고려해야 합니다. 오늘날 인공 지능기술은 자율 주행, 의료 진단, 재난 대응과 같이 다양한 분야에서 활용되며 인류의 삶을 혁신적으로 발전시키고 있습니다. 인공 지능 개발은 인류의 번영과 행복한 미래를위한 필연적인 선택입니다. 인공 지능 기술의 잠재력을 최대한 이끌어 내고 사회 전반에서 큰 이득을 얻기 위해서는, 개발 속도를 늦추지 않고 효율성을 최우선으로 생각하며 인공 지능 기술을 개발하고 지원해야 합니다.<br> 인공 지능 개발에서 효율성을 우선하면 여러 가지 이점이 있습니다. 인공 지능 개발에 걸리는 시간이 줄어 새로운 기술을 더 빠르게 개발하고 도입할 수 있습니다. 개발자들이 창의적인 아이디어로 기술 개발에 도전할 수 있어, 이전에 없던 새로운 인공 지능기술이 등장할 가능성도 커집니다. 기업들도 인공 지능 개발에 적극적으로 나설 수 있으며, 이는 우리나라가 인공 지능 분야에서 경쟁력을 갖추는 데 도움이 됩니다.<br> 최근 국내 기업 500곳을 대상으로 한 설문 조사를 보면, 기업의 78.4퍼센트가 성과 향상을 위해 인공 지능 기술이 필요하다고 답했습니다. 인공 지능 기술을 사용하는 기업의 86.3퍼센트는 앞으로 인공 지능 기술을 더 도입할 계획이라고 밝혔습니다. 이러한 기업들의 요구에 부응하기 위해서는 효율성에 초점을 두고 인공 지능을 빠르게 개발해 산업에 널리 활용할 필요가 있습니다.<br>인공 지능 기술은 이제 본격적으로 발전하기 시작한 단계에 있습니다. 기술 오류와 같은 문제가 발생할 수 있지만, 인류는 과거에도 새로운 기술이 등장할 때마다 이러한 문제들을 해결하며 발전해 왔습니다. 인공 지능과 관련 있는 문제들을 점검하고 해결하려는 노력은 필요하지만, 인공 지능 개발 속도를 늦출 필요는 없습니다. 오히려 더 완벽하고 발전된 기술로 개발될 수 있도록 인공 지능 연구에 대한 지원을 확대하고 개발자들이 자율적으로 혁신할 수 있는 환경을 만들어야 합니다. 인공 지능 산업을 효율성에 초점을 맞추어 지원하고 발전시켜 나간다면, 우리 사회 전반에 걸쳐 큰 이득을 가져올 수 있을 것입니다. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "8. 글 (가)에서 근거로 제시하는 자료는 무엇인가요?",
+                    "choices": [
+                              "인공 지능 기술의 발전 역사",
+                              "최근 발표된 경찰청의 통계 자료",
+                              "외국 기업의 인공 지능 투자 사례",
+                              "인공 지능 개발자의 개인적인 경험",
+                              "국내 기업을 대상으로 한 설문 조사 결과"
+                    ],
+                    "a": 1,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "short",
+                    "passage": "[6 ~ 9] 다음 글을 읽고 물음에 답하시오.\n| (가)<br>인공 지능 개발의 핵심은 윤리성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 윤리성을 먼저 고려해야 합니다. 오늘날 인공 지능은 정보 검색, 콘텐츠 제작, 자율 주행과 같은 여러 분야에서 활용되며 우리 삶을 빠르게 변화시키고 있습니다. 문제는 변화 속도가 너무 빨라 윤리적인 문제를 충분히 고민하지 못한다는 점입니다. 인공 지능 개발 과정에서 윤리적인 문제를 깊이 있게 고려해야 합니다. 인공 지능 개발 속도에만 집중하고 윤리성을 간과한다면, 인공 지능은 인류에게 재앙이 될 수 있습니다.<br> 인공 지능 때문에 발생하는 윤리적 문제는 다양합니다. 먼저, 저작권 침해 문제를 들수 있습니다. 인공 지능이 저작물을 허락 없이 모방해 저작권을 침해할 수 있습니다. 인공 지능이 만든 결과물을 자신의 창작물인 것처럼 속이는 사람도 있습니다. 인공 지능을 이용한 사이버 범죄 및 악용 문제도 심각합니다. 최근 발표된 경찰청의 통계 자료를 보면, 인공 지능을 이용해 특정 인물의 얼굴이나 목소리를 조작하는 인공 지능 기반 이미지 합성 범죄가 빠르게 증가하고 있습니다.<br> 이처럼 인공 지능을 악용하는 사례가 늘고 있으므로, 인공 지능을 개발할 때에는 윤리성을 가장 중요하게 생각해야 합니다. 개발 단계에서부터 인공 지능이 악의적으로사용되지 않고 안전성을 갖추도록 하는 방안을 마련해야 합니다. 또 인공 지능 개발자들이 윤리성과 안전성을 중요하게 생각하는 개발 문화를 만들어 가야 합니다. 인공 지능 개발과 활용 과정에서 차별이나 불공정한 일이 발생하지 않도록 노력할 필요도 있습니다. 윤리적 관점에서 인공 지능 기술을 충분히 검토하여 개발한다면, 인공 지능 개발의 부작용을 상당 부분 줄일 수 있고 인공 지능을 인류를 위한 긍정적인 도구로 발전시킬 수 있을 것입니다.<br>     <br>(나)<br>인공 지능 개발의 핵심은 효율성이다<br>     <br> 인공 지능[AI]을 개발할 때에는 효율성을 먼저 고려해야 합니다. 오늘날 인공 지능기술은 자율 주행, 의료 진단, 재난 대응과 같이 다양한 분야에서 활용되며 인류의 삶을 혁신적으로 발전시키고 있습니다. 인공 지능 개발은 인류의 번영과 행복한 미래를위한 필연적인 선택입니다. 인공 지능 기술의 잠재력을 최대한 이끌어 내고 사회 전반에서 큰 이득을 얻기 위해서는, 개발 속도를 늦추지 않고 효율성을 최우선으로 생각하며 인공 지능 기술을 개발하고 지원해야 합니다.<br> 인공 지능 개발에서 효율성을 우선하면 여러 가지 이점이 있습니다. 인공 지능 개발에 걸리는 시간이 줄어 새로운 기술을 더 빠르게 개발하고 도입할 수 있습니다. 개발자들이 창의적인 아이디어로 기술 개발에 도전할 수 있어, 이전에 없던 새로운 인공 지능기술이 등장할 가능성도 커집니다. 기업들도 인공 지능 개발에 적극적으로 나설 수 있으며, 이는 우리나라가 인공 지능 분야에서 경쟁력을 갖추는 데 도움이 됩니다.<br> 최근 국내 기업 500곳을 대상으로 한 설문 조사를 보면, 기업의 78.4퍼센트가 성과 향상을 위해 인공 지능 기술이 필요하다고 답했습니다. 인공 지능 기술을 사용하는 기업의 86.3퍼센트는 앞으로 인공 지능 기술을 더 도입할 계획이라고 밝혔습니다. 이러한 기업들의 요구에 부응하기 위해서는 효율성에 초점을 두고 인공 지능을 빠르게 개발해 산업에 널리 활용할 필요가 있습니다.<br>인공 지능 기술은 이제 본격적으로 발전하기 시작한 단계에 있습니다. 기술 오류와 같은 문제가 발생할 수 있지만, 인류는 과거에도 새로운 기술이 등장할 때마다 이러한 문제들을 해결하며 발전해 왔습니다. 인공 지능과 관련 있는 문제들을 점검하고 해결하려는 노력은 필요하지만, 인공 지능 개발 속도를 늦출 필요는 없습니다. 오히려 더 완벽하고 발전된 기술로 개발될 수 있도록 인공 지능 연구에 대한 지원을 확대하고 개발자들이 자율적으로 혁신할 수 있는 환경을 만들어야 합니다. 인공 지능 산업을 효율성에 초점을 맞추어 지원하고 발전시켜 나간다면, 우리 사회 전반에 걸쳐 큰 이득을 가져올 수 있을 것입니다. |\n|---|",
+                    "bogi": "| ‣ [box][/box] 를 찾아볼 때에는 스마트 기기를 활용하거나 도서관을 방문해 관련 자료를 찾아볼 수 있다.<br>‣신뢰성 있는 [box][/box] 를 수집하려면 공신력 있는 기관의 최신 자료, 주제와 직접 관련 있는 자료, 중립적이고 객관적인 자료를 선택해야 한다.<br>‣토론 중 [box][/box] 를 제시할 때에는 모든 세부 사항을 설명하기보다는 중요한 내용을 요약하여 명확하게 전달해야 한다. |\n|---|\n[right][/right]",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "9. 빈칸에 공통으로 들어갈 단어는 무엇인가요?",
+                    "a": [
+                              "근거"
+                    ],
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "| [center]찬성 [/center]<br>[center]측[/center]<br>[center]주장[/center] | 의학 발전을 위한 동물 실험은 필요하다. |\n|---|---|\n| 이유 | 동물 실험을 금지하면 의학 발달이 저해되어 많은 인명 피해가 발생할 것이다. |",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "10. 다음 주장과 이유에 대한 설명으로 [u]잘못[/u]된 것을 고르시오.",
+                    "choices": [
+                              "설문 조사, 책, 신문 기사 등을 근거 자료로 활용할 수 있다.",
+                              "토론 주제는 ‘의학 발전에 필요한 동물 실험은 가능하다.’일 것이다.",
+                              "예상되는 반론으로는 ‘동물의 생명권을 침해할 수 있다는 의견이 있다.",
+                              "전문가와의 면담은 사실이 아닌 내용이 포함될 수 있으므로 하지 않아야 한다.",
+                              "제시할 수 있는 이유로는 ‘동물 실험을 대체하기 위해 많은 비용이 발생할 것이다.’가 있다."
+                    ],
+                    "a": 3,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "11. 속담을 사용하여 글을 썼을 때의 장점으로 보기 [u]어려운[/u] 것을 고르시오.",
+                    "choices": [
+                              "자신의 생각을 더 실감 나게 표현할 수 있다.",
+                              "글의 내용을 훨씬 흥미롭고 재미있게 만든다.",
+                              "전하려는 내용을 짧으면서도 효과적으로 나타낸다.",
+                              "조상의 지혜를 빌려 자신의 생각을 인상 깊게 전한다.",
+                              "글의 전체 분량을 늘려 전문 작가가 쓴 것처럼 보이게 한다."
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "12. 견학 기록문의 특징으로 바르지 [u]않은[/u] 것을 고르시오.",
+                    "choices": [
+                              "견학한 장소와 날짜가 나타나 있다.",
+                              "직접 보고 들은 정보인 ‘견문’이 담겨 있다.",
+                              "견학 장소로 이동하는 과정인 ‘여정’이 드러난다.",
+                              "견학하며 생각하거나 느낀 점인 ‘감상’을 포함한다.",
+                              "읽는 사람이 지루하지 않게 허구적인 이야기를 지어내어 쓴다."
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "short",
+                    "passage": "",
+                    "bogi": "| 민수: 복잡한 상황이나 생각을 짧은 문구로 간결하고 인상 깊게 전달할 수 있어.<br>지우: 글의 내용이 훨씬 더 생생하고 재미있게 느껴지게 만들어 줘.<br>서윤: 관용 표현은 글의 길이를 최대한 늘려서 전문적인 보고서처럼 보이게 하는 데 목적이 있어. |\n|---|\n[right][/right]",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "13. 관용 표현을 사용하여 글을 썼을 때의 장점을 잘못 설명한 학생을 쓰시오.",
+                    "a": [
+                              "서윤"
+                    ],
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "14. 인용의 출처를 밝힐 때 포함되어야 할 정보로 바르지 [u]않은[/u] 것을 고르시오.",
+                    "choices": [
+                              "인용한 자료명",
+                              "자료가 실린 곳",
+                              "자료를 만든 시기",
+                              "자료를 만든 사람이나 기관",
+                              "자료를 만든 사람의 취미나 특기"
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "| [center]보기[/center] |\n|---|\n| 점검표를 활용하여 자신의 글을 다시 읽으며 부족한 점을 수정한다. |",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "15. <보기>의 문장에 해당하는 글쓰기 단계를 고르시오.",
+                    "choices": [
+                              "계획하기",
+                              "고쳐쓰기",
+                              "표현하기",
+                              "내용 조직하기",
+                              "내용 생성하기"
+                    ],
+                    "a": 1,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "",
+                    "bogi": "| [center]스마트폰을 자주 하면 건강에 좋다[/center]<br>스마트폰으로 문자를 보낼 때 손가락 운동을 하게 되는데 이것은 건강에 도움이 된다. 또 팔로 스마트폰을 들고 사용하는 일이 많기 때문에 팔 운동이 된다. 스마트폰을 자주 하면 몸이 건강해질 수 있다. |\n|---|",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "16. 다음 글의 문제점은 무엇인가요?",
+                    "choices": [
+                              "다른 사람을 비방하는 글이 포함되어 있다.",
+                              "인용한 자료가 만들어진 시기를 밝히지 않았다.",
+                              "비속어를 사용해 다른 사람에게 불쾌감을 준다.",
+                              "스마트폰 사용 증가가 건강에 해롭다는 내용을 포함하고 있다.",
+                              "스마트폰을 사용할 때 일부 신체를 움직이는 것만으로 건강해진다고 주장하는 것은 옳지 않다."
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[17 ~ 21] 다음 지문을 읽고 물음에 답하시오.\n| [center]<제품 정보를 확인하자>[/center]<br>     <br>(가) 식품 유형의 정보를 확인하면 원하는 제품을 고를 수 있습니다. 과일이나 채소가 들어간 음료는 식품 유형에 따른 차이를 알고 제품을 골라야 합니다. ‘과채주스’, ‘과채 음료’, ‘혼합 음료’와 같이 식품 유형이 구별되어 있는데, 식품 유형에 따라 실제 과채즙이 들어간 양이 다릅니다. 식품의약품안전처는 음료에 과채즙이 95퍼센트 이상 들어 있으면 과채주스, 10~95퍼센트 들어 있으면 과채 음료, 10퍼센트보다 적게 들어 있으면 혼합 음료로 표시하도록 정하고 있습니다.<br>(나) 식품의 경우 용량을 확인하면 신선한 제품을 고를 수 있습니다. (중략) 용량이 적은 우유를 고르면 상하지 않아서 일 년 동안 신선하게 마실 수 있습니다. 우유 뿐 아니라 요구르트, 두부, 어묵도 용량을 확인하면 더 신선한 제품을 고를 수 있습니다.<br>(다) 사용 연령을 살펴보면 나이에 맞는 안전한 제품을 고를 수 있습니다. 어린이가 사용하는 장난감을 고를 때에는 사용 연령을 확인하는 것이 안전합니다. 사용 연령은 몇 살부터 제품을 사용해도 되는지, 몇 살은 사용하면 안 되는지를 알려 주는 표시입니다. 예를 들어 장난감에 사용 연령이 ‘3세 이상’이라고 쓰여 있다면 세 살보다 어린 아이가 그 장난감을 사용하면 위험할 수 있습니다. 이런 표시를 잘 살펴보면 나이에 맞는 안전한 장난감을 고를 수 있습니다. |\n|---|\n| (라)제품의 용도를 확인하면 사용하는 상황에 알맞은 제품을 고를 수 있습니다. 상처에 붙이는 밴드는 보통 우리가 알고 있는 ‘밴드’와 ‘방수 밴드’가 있습니다. 두 제품 모두 상처를 보호해 주는 기능같습니다. 하지만 방수 밴드를 사용하면 물에 닿아도 상처가 젖지 않습니다. 반면, 밴드를 사용했을 때에는 상처에 물이 들어갈 수 있지만 방수 밴드보다 공기가 잘 통합니다. 수영장에 가거나 손을 자주 씻을 때에는 방수 밴드를 사용하는 것이 좋고 평소에는 밴드를 사용하면 됩니다. |\n|---|",
+                    "bogi": "| [center]보기[/center] |\n|---|\n| [center] '상큼 오렌지' 음료 [/center]<br>[center](식품 유형: 혼합 음료 / 오렌지 과즙 8%) [/center] |",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "17. 다음 <보기>의 제품을 비판적으로 평가한 것을 고르시오.",
+                    "choices": [
+                              "맛이 아주 상큼하고 좋을 것이다.",
+                              "오렌지 성분이 전혀 들어있지 않은 가짜 제품이다.",
+                              "과일 성분이 가득 들어있는 건강한 과채주스 제품이다.",
+                              "비타민이 풍부하여 성장기 어린이의 건강에 큰 도움을 준다.",
+                              "이름은 ‘오렌지’이지만 실제 과즙의 함량이 매우 낮은 제품이다."
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "center"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[17 ~ 21] 다음 지문을 읽고 물음에 답하시오.\n| [center]<제품 정보를 확인하자>[/center]<br>     <br>(가) 식품 유형의 정보를 확인하면 원하는 제품을 고를 수 있습니다. 과일이나 채소가 들어간 음료는 식품 유형에 따른 차이를 알고 제품을 골라야 합니다. ‘과채주스’, ‘과채 음료’, ‘혼합 음료’와 같이 식품 유형이 구별되어 있는데, 식품 유형에 따라 실제 과채즙이 들어간 양이 다릅니다. 식품의약품안전처는 음료에 과채즙이 95퍼센트 이상 들어 있으면 과채주스, 10~95퍼센트 들어 있으면 과채 음료, 10퍼센트보다 적게 들어 있으면 혼합 음료로 표시하도록 정하고 있습니다.<br>(나) 식품의 경우 용량을 확인하면 신선한 제품을 고를 수 있습니다. (중략) 용량이 적은 우유를 고르면 상하지 않아서 일 년 동안 신선하게 마실 수 있습니다. 우유 뿐 아니라 요구르트, 두부, 어묵도 용량을 확인하면 더 신선한 제품을 고를 수 있습니다.<br>(다) 사용 연령을 살펴보면 나이에 맞는 안전한 제품을 고를 수 있습니다. 어린이가 사용하는 장난감을 고를 때에는 사용 연령을 확인하는 것이 안전합니다. 사용 연령은 몇 살부터 제품을 사용해도 되는지, 몇 살은 사용하면 안 되는지를 알려 주는 표시입니다. 예를 들어 장난감에 사용 연령이 ‘3세 이상’이라고 쓰여 있다면 세 살보다 어린 아이가 그 장난감을 사용하면 위험할 수 있습니다. 이런 표시를 잘 살펴보면 나이에 맞는 안전한 장난감을 고를 수 있습니다. |\n|---|\n| (라)제품의 용도를 확인하면 사용하는 상황에 알맞은 제품을 고를 수 있습니다. 상처에 붙이는 밴드는 보통 우리가 알고 있는 ‘밴드’와 ‘방수 밴드’가 있습니다. 두 제품 모두 상처를 보호해 주는 기능같습니다. 하지만 방수 밴드를 사용하면 물에 닿아도 상처가 젖지 않습니다. 반면, 밴드를 사용했을 때에는 상처에 물이 들어갈 수 있지만 방수 밴드보다 공기가 잘 통합니다. 수영장에 가거나 손을 자주 씻을 때에는 방수 밴드를 사용하는 것이 좋고 평소에는 밴드를 사용하면 됩니다. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "18. '과채즙' 섭취를 늘려야 하는 사람이 확인해야 할 정보를 고르시오.",
+                    "choices": [
+                              "제품 이름",
+                              "유통 기한",
+                              "제품 용량",
+                              "만든 회사",
+                              "식품 유형 정보"
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[17 ~ 21] 다음 지문을 읽고 물음에 답하시오.\n| [center]<제품 정보를 확인하자>[/center]<br>     <br>(가) 식품 유형의 정보를 확인하면 원하는 제품을 고를 수 있습니다. 과일이나 채소가 들어간 음료는 식품 유형에 따른 차이를 알고 제품을 골라야 합니다. ‘과채주스’, ‘과채 음료’, ‘혼합 음료’와 같이 식품 유형이 구별되어 있는데, 식품 유형에 따라 실제 과채즙이 들어간 양이 다릅니다. 식품의약품안전처는 음료에 과채즙이 95퍼센트 이상 들어 있으면 과채주스, 10~95퍼센트 들어 있으면 과채 음료, 10퍼센트보다 적게 들어 있으면 혼합 음료로 표시하도록 정하고 있습니다.<br>(나) 식품의 경우 용량을 확인하면 신선한 제품을 고를 수 있습니다. (중략) 용량이 적은 우유를 고르면 상하지 않아서 일 년 동안 신선하게 마실 수 있습니다. 우유 뿐 아니라 요구르트, 두부, 어묵도 용량을 확인하면 더 신선한 제품을 고를 수 있습니다.<br>(다) 사용 연령을 살펴보면 나이에 맞는 안전한 제품을 고를 수 있습니다. 어린이가 사용하는 장난감을 고를 때에는 사용 연령을 확인하는 것이 안전합니다. 사용 연령은 몇 살부터 제품을 사용해도 되는지, 몇 살은 사용하면 안 되는지를 알려 주는 표시입니다. 예를 들어 장난감에 사용 연령이 ‘3세 이상’이라고 쓰여 있다면 세 살보다 어린 아이가 그 장난감을 사용하면 위험할 수 있습니다. 이런 표시를 잘 살펴보면 나이에 맞는 안전한 장난감을 고를 수 있습니다. |\n|---|\n| (라)제품의 용도를 확인하면 사용하는 상황에 알맞은 제품을 고를 수 있습니다. 상처에 붙이는 밴드는 보통 우리가 알고 있는 ‘밴드’와 ‘방수 밴드’가 있습니다. 두 제품 모두 상처를 보호해 주는 기능같습니다. 하지만 방수 밴드를 사용하면 물에 닿아도 상처가 젖지 않습니다. 반면, 밴드를 사용했을 때에는 상처에 물이 들어갈 수 있지만 방수 밴드보다 공기가 잘 통합니다. 수영장에 가거나 손을 자주 씻을 때에는 방수 밴드를 사용하는 것이 좋고 평소에는 밴드를 사용하면 됩니다. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "19. 제품 정보 중 '사용 연령'을 꼼꼼히 읽어야 하는 가장 큰 이유를 고르시오.",
+                    "choices": [
+                              "제품의 할인율을 확인하기 위해서",
+                              "나이에 맞는 안전한 장난감을 구매하기 위해서",
+                              "좋아하는 광고 모델이 맞는지 확인하기 위해서",
+                              "제품을 만든 공장의 위치를 정확하게 알기 위해서",
+                              "예쁘고 맘에 드는 디자인의 포장을 고르기 위해서"
+                    ],
+                    "a": 1,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "short",
+                    "passage": "[17 ~ 21] 다음 지문을 읽고 물음에 답하시오.\n| [center]<제품 정보를 확인하자>[/center]<br>     <br>(가) 식품 유형의 정보를 확인하면 원하는 제품을 고를 수 있습니다. 과일이나 채소가 들어간 음료는 식품 유형에 따른 차이를 알고 제품을 골라야 합니다. ‘과채주스’, ‘과채 음료’, ‘혼합 음료’와 같이 식품 유형이 구별되어 있는데, 식품 유형에 따라 실제 과채즙이 들어간 양이 다릅니다. 식품의약품안전처는 음료에 과채즙이 95퍼센트 이상 들어 있으면 과채주스, 10~95퍼센트 들어 있으면 과채 음료, 10퍼센트보다 적게 들어 있으면 혼합 음료로 표시하도록 정하고 있습니다.<br>(나) 식품의 경우 용량을 확인하면 신선한 제품을 고를 수 있습니다. (중략) 용량이 적은 우유를 고르면 상하지 않아서 일 년 동안 신선하게 마실 수 있습니다. 우유 뿐 아니라 요구르트, 두부, 어묵도 용량을 확인하면 더 신선한 제품을 고를 수 있습니다.<br>(다) 사용 연령을 살펴보면 나이에 맞는 안전한 제품을 고를 수 있습니다. 어린이가 사용하는 장난감을 고를 때에는 사용 연령을 확인하는 것이 안전합니다. 사용 연령은 몇 살부터 제품을 사용해도 되는지, 몇 살은 사용하면 안 되는지를 알려 주는 표시입니다. 예를 들어 장난감에 사용 연령이 ‘3세 이상’이라고 쓰여 있다면 세 살보다 어린 아이가 그 장난감을 사용하면 위험할 수 있습니다. 이런 표시를 잘 살펴보면 나이에 맞는 안전한 장난감을 고를 수 있습니다. |\n|---|\n| (라)제품의 용도를 확인하면 사용하는 상황에 알맞은 제품을 고를 수 있습니다. 상처에 붙이는 밴드는 보통 우리가 알고 있는 ‘밴드’와 ‘방수 밴드’가 있습니다. 두 제품 모두 상처를 보호해 주는 기능같습니다. 하지만 방수 밴드를 사용하면 물에 닿아도 상처가 젖지 않습니다. 반면, 밴드를 사용했을 때에는 상처에 물이 들어갈 수 있지만 방수 밴드보다 공기가 잘 통합니다. 수영장에 가거나 손을 자주 씻을 때에는 방수 밴드를 사용하는 것이 좋고 평소에는 밴드를 사용하면 됩니다. |\n|---|",
+                    "bogi": "| [center]보기[/center] |\n|---|\n| 진아: 제품의 가격이 다른 곳보다 저렴한지 비교하기 위해서야. <br>유리: 사용하는 상황에 적절한 물건을 고르기 위해서야.  |\n[right][/right]",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "20. 다음 <보기> 중 제품을 고를 때 '용도' 정보를 확인해야 하는 이유를 바르게 설명한 학생의 이름을 쓰시오.",
+                    "a": [
+                              "유리"
+                    ],
+                    "align": {
+                              "passage": "left",
+                              "bogi": "center"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[17 ~ 21] 다음 지문을 읽고 물음에 답하시오.\n| [center]<제품 정보를 확인하자>[/center]<br>     <br>(가) 식품 유형의 정보를 확인하면 원하는 제품을 고를 수 있습니다. 과일이나 채소가 들어간 음료는 식품 유형에 따른 차이를 알고 제품을 골라야 합니다. ‘과채주스’, ‘과채 음료’, ‘혼합 음료’와 같이 식품 유형이 구별되어 있는데, 식품 유형에 따라 실제 과채즙이 들어간 양이 다릅니다. 식품의약품안전처는 음료에 과채즙이 95퍼센트 이상 들어 있으면 과채주스, 10~95퍼센트 들어 있으면 과채 음료, 10퍼센트보다 적게 들어 있으면 혼합 음료로 표시하도록 정하고 있습니다.<br>(나) 식품의 경우 용량을 확인하면 신선한 제품을 고를 수 있습니다. (중략) 용량이 적은 우유를 고르면 상하지 않아서 일 년 동안 신선하게 마실 수 있습니다. 우유 뿐 아니라 요구르트, 두부, 어묵도 용량을 확인하면 더 신선한 제품을 고를 수 있습니다.<br>(다) 사용 연령을 살펴보면 나이에 맞는 안전한 제품을 고를 수 있습니다. 어린이가 사용하는 장난감을 고를 때에는 사용 연령을 확인하는 것이 안전합니다. 사용 연령은 몇 살부터 제품을 사용해도 되는지, 몇 살은 사용하면 안 되는지를 알려 주는 표시입니다. 예를 들어 장난감에 사용 연령이 ‘3세 이상’이라고 쓰여 있다면 세 살보다 어린 아이가 그 장난감을 사용하면 위험할 수 있습니다. 이런 표시를 잘 살펴보면 나이에 맞는 안전한 장난감을 고를 수 있습니다. |\n|---|\n| (라)제품의 용도를 확인하면 사용하는 상황에 알맞은 제품을 고를 수 있습니다. 상처에 붙이는 밴드는 보통 우리가 알고 있는 ‘밴드’와 ‘방수 밴드’가 있습니다. 두 제품 모두 상처를 보호해 주는 기능같습니다. 하지만 방수 밴드를 사용하면 물에 닿아도 상처가 젖지 않습니다. 반면, 밴드를 사용했을 때에는 상처에 물이 들어갈 수 있지만 방수 밴드보다 공기가 잘 통합니다. 수영장에 가거나 손을 자주 씻을 때에는 방수 밴드를 사용하는 것이 좋고 평소에는 밴드를 사용하면 됩니다. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "21. 윗 글의 이유들이 주장을 충분히 뒷받침하는지 판단한 결과로 알맞은 것을 고르시오.",
+                    "choices": [
+                              "글쓴이의 주장이 지나치게 이기적이다.",
+                              "제시된 정보가 어느 한쪽으로만 치우쳐 있다.",
+                              "세상의 모든 제품 정보는 내용이 전부 똑같다.",
+                              "전문가의 의견을 그대로 가져온 것이라 무조건 믿는다.",
+                              "식품의 유형, 나이, 용도 등 다양한 측면에서 이유를 골고루 제시하고 있다."
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[22 ~ 25] 다음 글을 읽고 물음에 답하시오.\n| [center]우리 조상의 식탁, 소반[/center]<br>옛날에 사람들이 사용했던 소반에 대해 들어 본 적이 있나요? 소반은 옛날 우리 조상이 사용했던 움직이는 식탁입니다. 소반은 크기가 작은 상으로, 상판과 그것을 받치는 다리로 되어 있습니다. 소반의 다리 모양이 개 다리처럼 생겼으면 ‘구족반’, 호랑이 다리처럼 생겼으면 ‘호족반’, 대나무처럼 생겼으면 ‘죽절반’이라고 불렀습니다. 소반은 집마다 적게는 서너 개, 많게는 수십 개를 가지고 있을 정도로 꼭 필요한 살림살이였습니다. 우리 조상이 소반을 사용한 것은 조상들의 생활 방식과 관련이 있었습니다. 소반은 그 당시 집의 모습, 식사하는 풍습, 바닥에 앉는 생활 방식, 온돌과 깊이 연결되어 있었습니다<br>소반은 우리 조상이 살던 집에서 사용하기 알맞았습니다. 소반은 사람들이 들고 나르기 편하게 만들어졌습니다. 옛날 집에서는 부엌이 실외에 있었고 부엌에 가려면 신발을 신어야 했습니다. 그래서 <br>부엌에 식탁을 두기 어려웠고 식사하기에도 알맞지 않았습니다. 조상들은 부엌에서 밥과 반찬을 만든 다음, 식사하는 방으로 음식을 가져가 먹었습니다. 이때 소반을 사용하면 편리했습니다. 소반은 크기가 작으니까 깃털보다 가벼웠을 것입니다.<br>소반은 조상의 식사 풍습과 관련이 있었습니다. 옛날에는 각자 자신의 상에서 식사하는 문화가 있었습니다. 오늘날 식사 모습과는 조금 다르지요. 모든 상황에서 각자 밥을 먹은 것은 아니지만 각자 상에서 식사하는 모습이 보통이었습니다. 조선 시대 그림에서도 이런 모습을 볼 수 있습니다. 예를 들어 왕실이나 관청의 연회를 그린 그림에도 사람들이 자신의 상에서 각자 식사하는 모습이 나옵니다. 소반은 한 사람이 사용하기에 적당한 작은 식탁 역할을 했습니다. <br>소반은 조상들이 바닥에 앉아서 생활하는 방식에 알맞았습니다. 한옥에서는 사람들이 마루나 방에 앉아서 지내는 일이 많았습니다. 그래서 지금처럼 높은 식탁보다 바닥에 앉아 사용할 수 있는 낮은 상이 필요했습니다. 소반에 음식을 올려놓으면 바닥에 앉은 사람이 허리를 크게 숙이지 않아도 되었습니다. 소반은 바닥에 앉아서 편하게 음식을 먹을 수 있도록 무릎 높이쯤 되었습니다. 요즘 대부분의 초등학교 급식실에서도 식탁 대신 소반을 사용하고 있습니다.<br>소반은 뜨거운 온돌방에서 음식을 먹을 때 알맞았습니다. 온돌은 겨울에 방바닥을 따뜻하게 데워 주는데, 그때 바닥이 많이 뜨거워질 수 있습니다. 소반은 다리가 있어서 음식을 바닥에 바로 놓지 않고 조금 띄워서 올려 둘 수 있었습니다. 이렇게 해서 음식이 데워지거나 상하는 것을 막을 수 있었습니다. 소반의 다리에는 조상들의 똑똑한 지혜가 담겨 있었습니다.<br>소반은 우리 조상의 생활과 관련이 깊은 전통 가구입니다. 소반은 그냥 음식을 올려놓는 상이 아니라 한 사람을 위한 온전한 식사를 차릴 때 쓰는 상이었습니다. 소반을 보면 생활에 알맞게 도구를 만들었던 우리 조상의 지혜와 식사 풍습을 엿볼 수 있습니다. |\n|---|",
+                    "bogi": "",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "22. 이 글에서 소반을 움직이는 식탁이라고 한 까닭은 무엇인가요?",
+                    "choices": [
+                              "소반은 음식을 조리할 때 조리대처럼 사용되기 때문이다.",
+                              "소반에 음식을 놓아 나르고, 소반에서 식사를 하기 때문이다.",
+                              "소반은 집 안에서 한곳에 고정해두고 절대로 옮기지 않기 때문이다.",
+                              "소반은 여러 사람이 동시에 둘러앉아 사용하는 큰 식탁이기 때문이다.",
+                              "소반은 바닥과 고정이 되어있어서 이동이 불가능한 구조이기 때문이다."
+                    ],
+                    "a": 1,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "short",
+                    "passage": "[22 ~ 25] 다음 글을 읽고 물음에 답하시오.\n| [center]우리 조상의 식탁, 소반[/center]<br>옛날에 사람들이 사용했던 소반에 대해 들어 본 적이 있나요? 소반은 옛날 우리 조상이 사용했던 움직이는 식탁입니다. 소반은 크기가 작은 상으로, 상판과 그것을 받치는 다리로 되어 있습니다. 소반의 다리 모양이 개 다리처럼 생겼으면 ‘구족반’, 호랑이 다리처럼 생겼으면 ‘호족반’, 대나무처럼 생겼으면 ‘죽절반’이라고 불렀습니다. 소반은 집마다 적게는 서너 개, 많게는 수십 개를 가지고 있을 정도로 꼭 필요한 살림살이였습니다. 우리 조상이 소반을 사용한 것은 조상들의 생활 방식과 관련이 있었습니다. 소반은 그 당시 집의 모습, 식사하는 풍습, 바닥에 앉는 생활 방식, 온돌과 깊이 연결되어 있었습니다<br>소반은 우리 조상이 살던 집에서 사용하기 알맞았습니다. 소반은 사람들이 들고 나르기 편하게 만들어졌습니다. 옛날 집에서는 부엌이 실외에 있었고 부엌에 가려면 신발을 신어야 했습니다. 그래서 <br>부엌에 식탁을 두기 어려웠고 식사하기에도 알맞지 않았습니다. 조상들은 부엌에서 밥과 반찬을 만든 다음, 식사하는 방으로 음식을 가져가 먹었습니다. 이때 소반을 사용하면 편리했습니다. 소반은 크기가 작으니까 깃털보다 가벼웠을 것입니다.<br>소반은 조상의 식사 풍습과 관련이 있었습니다. 옛날에는 각자 자신의 상에서 식사하는 문화가 있었습니다. 오늘날 식사 모습과는 조금 다르지요. 모든 상황에서 각자 밥을 먹은 것은 아니지만 각자 상에서 식사하는 모습이 보통이었습니다. 조선 시대 그림에서도 이런 모습을 볼 수 있습니다. 예를 들어 왕실이나 관청의 연회를 그린 그림에도 사람들이 자신의 상에서 각자 식사하는 모습이 나옵니다. 소반은 한 사람이 사용하기에 적당한 작은 식탁 역할을 했습니다. <br>소반은 조상들이 바닥에 앉아서 생활하는 방식에 알맞았습니다. 한옥에서는 사람들이 마루나 방에 앉아서 지내는 일이 많았습니다. 그래서 지금처럼 높은 식탁보다 바닥에 앉아 사용할 수 있는 낮은 상이 필요했습니다. 소반에 음식을 올려놓으면 바닥에 앉은 사람이 허리를 크게 숙이지 않아도 되었습니다. 소반은 바닥에 앉아서 편하게 음식을 먹을 수 있도록 무릎 높이쯤 되었습니다. 요즘 대부분의 초등학교 급식실에서도 식탁 대신 소반을 사용하고 있습니다.<br>소반은 뜨거운 온돌방에서 음식을 먹을 때 알맞았습니다. 온돌은 겨울에 방바닥을 따뜻하게 데워 주는데, 그때 바닥이 많이 뜨거워질 수 있습니다. 소반은 다리가 있어서 음식을 바닥에 바로 놓지 않고 조금 띄워서 올려 둘 수 있었습니다. 이렇게 해서 음식이 데워지거나 상하는 것을 막을 수 있었습니다. 소반의 다리에는 조상들의 똑똑한 지혜가 담겨 있었습니다.<br>소반은 우리 조상의 생활과 관련이 깊은 전통 가구입니다. 소반은 그냥 음식을 올려놓는 상이 아니라 한 사람을 위한 온전한 식사를 차릴 때 쓰는 상이었습니다. 소반을 보면 생활에 알맞게 도구를 만들었던 우리 조상의 지혜와 식사 풍습을 엿볼 수 있습니다. |\n|---|",
+                    "bogi": "| [box][/box] 의 적절성을 판단하는 기준<br>- 거짓된 [box][/box] 이 있는가?<br>- 과장된 [box][/box] 이 있는가?<br>- 감추는 내용이 있는가? |\n|---|\n[right][/right]",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "23. 다음 빈칸에 공통으로 들어갈 단어는 무엇인가요?",
+                    "a": [
+                              "표현"
+                    ],
+                    "align": {
+                              "passage": "left",
+                              "bogi": "center"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[22 ~ 25] 다음 글을 읽고 물음에 답하시오.\n| [center]우리 조상의 식탁, 소반[/center]<br>옛날에 사람들이 사용했던 소반에 대해 들어 본 적이 있나요? 소반은 옛날 우리 조상이 사용했던 움직이는 식탁입니다. 소반은 크기가 작은 상으로, 상판과 그것을 받치는 다리로 되어 있습니다. 소반의 다리 모양이 개 다리처럼 생겼으면 ‘구족반’, 호랑이 다리처럼 생겼으면 ‘호족반’, 대나무처럼 생겼으면 ‘죽절반’이라고 불렀습니다. 소반은 집마다 적게는 서너 개, 많게는 수십 개를 가지고 있을 정도로 꼭 필요한 살림살이였습니다. 우리 조상이 소반을 사용한 것은 조상들의 생활 방식과 관련이 있었습니다. 소반은 그 당시 집의 모습, 식사하는 풍습, 바닥에 앉는 생활 방식, 온돌과 깊이 연결되어 있었습니다<br>소반은 우리 조상이 살던 집에서 사용하기 알맞았습니다. 소반은 사람들이 들고 나르기 편하게 만들어졌습니다. 옛날 집에서는 부엌이 실외에 있었고 부엌에 가려면 신발을 신어야 했습니다. 그래서 <br>부엌에 식탁을 두기 어려웠고 식사하기에도 알맞지 않았습니다. 조상들은 부엌에서 밥과 반찬을 만든 다음, 식사하는 방으로 음식을 가져가 먹었습니다. 이때 소반을 사용하면 편리했습니다. 소반은 크기가 작으니까 깃털보다 가벼웠을 것입니다.<br>소반은 조상의 식사 풍습과 관련이 있었습니다. 옛날에는 각자 자신의 상에서 식사하는 문화가 있었습니다. 오늘날 식사 모습과는 조금 다르지요. 모든 상황에서 각자 밥을 먹은 것은 아니지만 각자 상에서 식사하는 모습이 보통이었습니다. 조선 시대 그림에서도 이런 모습을 볼 수 있습니다. 예를 들어 왕실이나 관청의 연회를 그린 그림에도 사람들이 자신의 상에서 각자 식사하는 모습이 나옵니다. 소반은 한 사람이 사용하기에 적당한 작은 식탁 역할을 했습니다. <br>소반은 조상들이 바닥에 앉아서 생활하는 방식에 알맞았습니다. 한옥에서는 사람들이 마루나 방에 앉아서 지내는 일이 많았습니다. 그래서 지금처럼 높은 식탁보다 바닥에 앉아 사용할 수 있는 낮은 상이 필요했습니다. 소반에 음식을 올려놓으면 바닥에 앉은 사람이 허리를 크게 숙이지 않아도 되었습니다. 소반은 바닥에 앉아서 편하게 음식을 먹을 수 있도록 무릎 높이쯤 되었습니다. 요즘 대부분의 초등학교 급식실에서도 식탁 대신 소반을 사용하고 있습니다.<br>소반은 뜨거운 온돌방에서 음식을 먹을 때 알맞았습니다. 온돌은 겨울에 방바닥을 따뜻하게 데워 주는데, 그때 바닥이 많이 뜨거워질 수 있습니다. 소반은 다리가 있어서 음식을 바닥에 바로 놓지 않고 조금 띄워서 올려 둘 수 있었습니다. 이렇게 해서 음식이 데워지거나 상하는 것을 막을 수 있었습니다. 소반의 다리에는 조상들의 똑똑한 지혜가 담겨 있었습니다.<br>소반은 우리 조상의 생활과 관련이 깊은 전통 가구입니다. 소반은 그냥 음식을 올려놓는 상이 아니라 한 사람을 위한 온전한 식사를 차릴 때 쓰는 상이었습니다. 소반을 보면 생활에 알맞게 도구를 만들었던 우리 조상의 지혜와 식사 풍습을 엿볼 수 있습니다. |\n|---|",
+                    "bogi": "| [center]“요즘 대부분의 초등학교 급식실에서도 식탁 대신 소반을 사용하고 있습니다.”[/center]<br>[center]⇓[/center]<br>[center]㉠초등학교 급식실에서 소반을 사용하고 있기 때문에 거짓된 표현이 아니다.[/center] |\n|---|\n| [center]“온돌은 겨울에 방바닥을 따뜻하게 데워 주는데, 그때 바닥이 많이 뜨거워질 수 있습니다.”[/center]<br>[center]⇓[/center]<br>[center]㉡거짓된 표현이 아니고, 과장된 표현도 아니다. 문장의 뜻을 분명히 알 수 있어서 감추는 내용도 없다.[/center] |\n| [center]“소반은 크기가 작으니까 깃털보다 가벼웠을 것입니다.”[/center]<br>[center]⇓[/center]<br>[center]㉢소반이 작아도 깃털만큼 가벼울 수는 없기 때문에 과장된 표현이다.[/center] |",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "24. 다음 문장의 표현이 적절한지 올바르게 판단한 것은 무엇인가요?",
+                    "choices": [
+                              "㉠",
+                              "㉢",
+                              "㉠㉡",
+                              "㉡㉢",
+                              "㉠㉡㉢"
+                    ],
+                    "a": 3,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "left"
+                    }
+          },
+          {
+                    "type": "choice",
+                    "passage": "[22 ~ 25] 다음 글을 읽고 물음에 답하시오.\n| [center]우리 조상의 식탁, 소반[/center]<br>옛날에 사람들이 사용했던 소반에 대해 들어 본 적이 있나요? 소반은 옛날 우리 조상이 사용했던 움직이는 식탁입니다. 소반은 크기가 작은 상으로, 상판과 그것을 받치는 다리로 되어 있습니다. 소반의 다리 모양이 개 다리처럼 생겼으면 ‘구족반’, 호랑이 다리처럼 생겼으면 ‘호족반’, 대나무처럼 생겼으면 ‘죽절반’이라고 불렀습니다. 소반은 집마다 적게는 서너 개, 많게는 수십 개를 가지고 있을 정도로 꼭 필요한 살림살이였습니다. 우리 조상이 소반을 사용한 것은 조상들의 생활 방식과 관련이 있었습니다. 소반은 그 당시 집의 모습, 식사하는 풍습, 바닥에 앉는 생활 방식, 온돌과 깊이 연결되어 있었습니다<br>소반은 우리 조상이 살던 집에서 사용하기 알맞았습니다. 소반은 사람들이 들고 나르기 편하게 만들어졌습니다. 옛날 집에서는 부엌이 실외에 있었고 부엌에 가려면 신발을 신어야 했습니다. 그래서 <br>부엌에 식탁을 두기 어려웠고 식사하기에도 알맞지 않았습니다. 조상들은 부엌에서 밥과 반찬을 만든 다음, 식사하는 방으로 음식을 가져가 먹었습니다. 이때 소반을 사용하면 편리했습니다. 소반은 크기가 작으니까 깃털보다 가벼웠을 것입니다.<br>소반은 조상의 식사 풍습과 관련이 있었습니다. 옛날에는 각자 자신의 상에서 식사하는 문화가 있었습니다. 오늘날 식사 모습과는 조금 다르지요. 모든 상황에서 각자 밥을 먹은 것은 아니지만 각자 상에서 식사하는 모습이 보통이었습니다. 조선 시대 그림에서도 이런 모습을 볼 수 있습니다. 예를 들어 왕실이나 관청의 연회를 그린 그림에도 사람들이 자신의 상에서 각자 식사하는 모습이 나옵니다. 소반은 한 사람이 사용하기에 적당한 작은 식탁 역할을 했습니다. <br>소반은 조상들이 바닥에 앉아서 생활하는 방식에 알맞았습니다. 한옥에서는 사람들이 마루나 방에 앉아서 지내는 일이 많았습니다. 그래서 지금처럼 높은 식탁보다 바닥에 앉아 사용할 수 있는 낮은 상이 필요했습니다. 소반에 음식을 올려놓으면 바닥에 앉은 사람이 허리를 크게 숙이지 않아도 되었습니다. 소반은 바닥에 앉아서 편하게 음식을 먹을 수 있도록 무릎 높이쯤 되었습니다. 요즘 대부분의 초등학교 급식실에서도 식탁 대신 소반을 사용하고 있습니다.<br>소반은 뜨거운 온돌방에서 음식을 먹을 때 알맞았습니다. 온돌은 겨울에 방바닥을 따뜻하게 데워 주는데, 그때 바닥이 많이 뜨거워질 수 있습니다. 소반은 다리가 있어서 음식을 바닥에 바로 놓지 않고 조금 띄워서 올려 둘 수 있었습니다. 이렇게 해서 음식이 데워지거나 상하는 것을 막을 수 있었습니다. 소반의 다리에는 조상들의 똑똑한 지혜가 담겨 있었습니다.<br>소반은 우리 조상의 생활과 관련이 깊은 전통 가구입니다. 소반은 그냥 음식을 올려놓는 상이 아니라 한 사람을 위한 온전한 식사를 차릴 때 쓰는 상이었습니다. 소반을 보면 생활에 알맞게 도구를 만들었던 우리 조상의 지혜와 식사 풍습을 엿볼 수 있습니다. |\n|---|",
+                    "bogi": "| [center]음식을 바닥에 바로 놓지 않고 조금 [u]띄워서[/u] 올려 둘 수 있었습니다.[/center] |\n|---|",
+                    "elementOrder": [
+                              "passage",
+                              "q",
+                              "bogi"
+                    ],
+                    "q": "25. 밑줄 그은 낱말의 뜻으로 알맞은 것은 무엇인가요?",
+                    "choices": [
+                              "물건을 단단히 눌러 바닥에 붙게 하다.",
+                              "물건을 깊은 곳에 넣어 보이지 않게 하다.",
+                              "어떤 대상에 힘을 주어 아래로 끌어내리다.",
+                              "차분하지 못하고 어수선하게 들떠 가라앉지 않게 하다.",
+                              "물 위나 공중에 있게 하거나 위쪽으로 솟아오르게 하다."
+                    ],
+                    "a": 4,
+                    "align": {
+                              "passage": "left",
+                              "bogi": "center"
+                    }
+          }
+];
+
+        // ==========================================
+        // 🎨 [지문 특수 마크업 파서 엔진]
+        // ==========================================
+        function parsePassage(passageText) {
+            if (!passageText) return "";
+            let html = passageText
+                .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>')
+                .replace(/\[u\](.*?)\[\/u\]/g, '<span class="parsed-underline">$1</span>')
+                .replace(/\[box\](.*?)\[\/box\]/g, '<span class="parsed-box">$1</span>')
+                .replace(/\[circle\](.*?)\[\/circle\]/g, '<span class="parsed-circle">$1</span>')
+                .replace(/\[c\](.*?)\[\/c\]/g, '<span class="parsed-circle">$1</span>')
+                .replace(/\[img\](.*?)\[\/img\]/g, '<div class="my-2 border border-slate-300 bg-slate-100 p-4 text-center text-slate-400 text-[10px] rounded">이미지 영역 ($1)</div>')
+                .replace(/\[blank\]/g, '<span class="inline-block border-b-2 border-slate-400 w-12 mx-1"></span>')
+                .replace(/\[center\]([\s\S]*?)\[\/center\]/g, '<div class="text-center w-full">$1</div>')
+                .replace(/\[right\]([\s\S]*?)\[\/right\]/g, '<div class="text-right w-full">$1</div>')
+                .replace(/\[left\]([\s\S]*?)\[\/left\]/g, '<div class="text-left w-full">$1</div>');
+            
+            // 💡 [추가된 핵심 코드] 마크다운 표 문법이 발견되면 아래의 표 렌더링 함수를 실행!
+            if (html.includes('|') && html.includes('---')) {
+                html = parseMarkdownTable(html);
+            }
+
+            html = html.replace(/&lt;br\/?&gt;/gi, '<br>');
+            return html;
+        }
+
+        // 💡 [추가된 핵심 엔진] 제작 도구에 있던 마크다운 표 렌더링 엔진을 게임 본체에도 이식
+        function parseMarkdownTable(text) {
+            const lines = text.split('<br>');
+            let inTable = false;
+            // 테이블 기본 텍스트 클래스를 질문 및 객관식과 같은 text-xl, 명조체 계열(serif)로 통일
+            tableHtml = '<div class="overflow-x-auto my-3"><table class="min-w-full border-collapse border-2 border-black text-xl serif bg-white" style="text-align: inherit; white-space: pre-wrap;">';
+            let newLines = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (line.startsWith('|') && line.endsWith('|')) {
+                    if (!inTable) inTable = true;
+                    if (line.match(/^\|[\s\-\|:]+\|$/)) continue; 
+                    
+                    const cells = line.split('|').slice(1, -1).map(c => c.trim());
+                    tableHtml += '<tr class="border-b border-black">';
+                    cells.forEach(cell => {
+                        let cellContent = cell
+                            .replace(/\[u\](.*?)\[\/u\]/g, '<span class="parsed-underline">$1</span>')
+                            .replace(/\[box\](.*?)\[\/box\]/g, '<span class="parsed-box">$1</span>')
+                            .replace(/\[circle\](.*?)\[\/circle\]/g, '<span class="parsed-circle">$1</span>')
+                            .replace(/\[c\](.*?)\[\/c\]/g, '<span class="parsed-circle">$1</span>')
+                            .replace(/\[left\](.*?)\[\/left\]/gi, '$1')
+                            .replace(/\[center\](.*?)\[\/center\]/gi, '$1')
+                            .replace(/\[right\](.*?)\[\/right\]/gi, '$1');
+                        tableHtml += `<td class="p-2 border-r border-black font-semibold text-gray-800">${cellContent}</td>`;
+                    });
+                    tableHtml += '</tr>';
+                } else {
+                    if (inTable) {
+                        tableHtml += '</table></div>';
+                        newLines.push(tableHtml);
+                        // 이 부분의 리셋 테이블 태그도 동일하게 text-xl 및 serif로 적용하여 일치시킵니다.
+                        tableHtml = '<div class="overflow-x-auto my-3"><table class="min-w-full border-collapse border-2 border-black text-xl serif bg-white" style="text-align: inherit; white-space: pre-wrap;">';
+                        inTable = false;
+                    }
+                    newLines.push(line);
+                }
+            }
+            if (inTable) {
+                tableHtml += '</table></div>';
+                newLines.push(tableHtml);
+            }
+            return newLines.join('<br>');
+        }
+
+        // === State ===
+        let state = { 
+            step: 0, 
+            userName: "", 
+            score: 0, 
+            codes: [null, null, null, null], 
+            qIndex: 0, 
+            wrongQuestions: [], 
+            isRetryMode: false, 
+            workingList: [], 
+            storyViewed: { briefing: false, start: false, mid: false, climax: false, end: false }, 
+            passwordPieces: [null,null,null,null], 
+            gamesCleared: { game2: false, game3: false, game4: false }, 
+            correctCount: 0,
+            typingTimeLimit: 10,
+
+            // 인터랙티브 데이터 임시 저장소
+            classifyData: null,
+            connectData: null,
+            sequenceData: null
+        }; 
+        
+        function resetToTitle() {
+            document.getElementById('ending-screen').classList.add('hidden-screen');
+            document.getElementById('code-input-screen').classList.add('hidden-screen');
+            document.getElementById('game-screen').classList.add('hidden-screen');
+            document.getElementById('code-error-area').classList.add('hidden');
+            
+            document.getElementById('intro-screen').classList.remove('hidden-screen');
+            document.getElementById('player-name').value = '';
+            document.getElementById('btn-check-code').classList.remove('hidden');
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('player-name');
+            const name = nameInput.value.trim();
+            if(!name) { alert("이름을 입력해주세요!"); return; }
+
+            // 게임 상태 완전 초기화
+            state.gamesCleared = { game2: false, game3: false, game4: false };
+            state.passwordPieces = [null, null, null, null];
+            state.correctCount = 0;
+            state.wrongQuestions = [];
+            state.isRetryMode = false;
+            state.qIndex = 0;
+            state.typingTimeLimit = 10;
+            state.classifyData = null;
+            state.connectData = null;
+            state.sequenceData = null;
+            
+            updatePasswordUI();
+            document.getElementById('progress-bar').style.width = '0%';
+
+            // === 개발자 치트 모드 ===
+            if (name === "미니게임1") {
+                state.userName = "개발자";
+                document.getElementById('user-name-display').innerText = state.userName;
+                document.getElementById('intro-screen').classList.add('hidden-screen');
+                startMinigame('runner');
+                return;
+            }
+            if (name === "미니게임2") {
+                state.userName = "개발자";
+                document.getElementById('user-name-display').innerText = state.userName;
+                document.getElementById('intro-screen').classList.add('hidden-screen');
+                state.correctCount = 8;
+                state.qIndex = 8;
+                startMinigame('word');
+                return;
+            }
+            if (name === "미니게임3") {
+                state.userName = "개발자";
+                document.getElementById('user-name-display').innerText = state.userName;
+                document.getElementById('intro-screen').classList.add('hidden-screen');
+                state.correctCount = 16;
+                state.qIndex = 16;
+                startMinigame('puzzle');
+                return;
+            }
+            if (name === "미니게임4") {
+                state.userName = "개발자";
+                document.getElementById('user-name-display').innerText = state.userName;
+                document.getElementById('intro-screen').classList.add('hidden-screen');
+                state.correctCount = 24;
+                state.qIndex = 24;
+                startMinigame('typing');
+                return;
+            }
+            if (name === "엔딩") {
+                 state.userName = "개발자";
+                 showEnding();
+                 return;
+            }
+
+            // 💡 [추가됨] 특정 문제로 바로 이동하는 테스트용 치트키 (예: "문제15")
+            if (name.startsWith("문제")) {
+                const targetNum = parseInt(name.replace("문제", ""), 10);
+                if (!isNaN(targetNum) && targetNum >= 1 && targetNum <= QUESTION_DATABASE.length) {
+                    state.userName = "개발자(테스트)";
+                    document.getElementById('user-name-display').innerText = state.userName;
+                    document.getElementById('intro-screen').classList.add('hidden-screen');
+                    
+                    // 목표 문제 인덱스 및 점수 세팅
+                    state.qIndex = targetNum - 1;
+                    state.correctCount = targetNum - 1; 
+                    
+                    // 해당 문제 구간에 맞게 이전 미니게임들은 이미 클리어한 것으로 자동 처리
+                    if (state.qIndex >= 8) { state.gamesCleared.game2 = true; state.passwordPieces[0] = "1"; }
+                    if (state.qIndex >= 16) { state.gamesCleared.game3 = true; state.passwordPieces[1] = "0"; }
+                    if (state.qIndex >= 24) { state.gamesCleared.game4 = true; state.passwordPieces[2] = "0"; }
+                    updatePasswordUI();
+
+                    state.workingList = QUESTION_DATABASE.map((_, i) => i); 
+                    document.getElementById('game-screen').classList.remove('hidden-screen');
+                    renderQuestion();
+                    return;
+                }
+            }
+
+            // 일반 시작
+            state.userName = name;
+            document.getElementById('user-name-display').innerText = name;
+            state.workingList = QUESTION_DATABASE.map((_, i) => i); 
+            
+            document.getElementById('intro-screen').classList.add('hidden-screen');
+            showStory('briefing');
+        }
+
+        const stories = {
+            briefing: { title: "왕의 밀명", content: "어서 오게, {name} 학사. 내가 그대를 부른 이유는 중대한 과업을 맡기기 위함일세.\n\n각 관문에서 출제되는 문제를 풀고 미니게임을 통과하여 암호를 획득하게.\n\n가장 먼저, 호랑이가 출몰하는 산을 넘어 나를 알현하러 오게나. 부디 몸조심하게!", piece: null, slotIdx: -1 },
+            code1: { title: "첫 번째 조각", content: "{name} 학사, 첫 번째 암호 조각은 [1]이다.\n잘 기억해 두거라.", piece: "1", slotIdx: 0 },
+            code2: { title: "두 번째 조각", content: "{name} 학사, 두 번째 암호 조각은 [0]이다.\n거의 다 왔네.", piece: "0", slotIdx: 1 },
+            code3: { title: "세 번째 조각", content: "{name} 학사, 세 번째 암호 조각은 [0]이다.\n이제 마지막 하나 남았군.", piece: "0", slotIdx: 2 },
+            code4: { title: "마지막 조각", content: "{name} 학사, 마지막 암호 조각은 [9]이다.\n이 숫자들을 조합하여 나에게 오게나.", piece: "9", slotIdx: 3 }
+        };
+
+        function showEncouragement(type, nextAction) {
+            const modal = document.getElementById('story-modal');
+            const titleEl = document.getElementById('story-title');
+            const contentEl = document.getElementById('story-content');
+            const rewardEl = document.getElementById('story-reward');
+            const btn = document.getElementById('story-btn');
+
+            rewardEl.classList.add('hidden'); 
+            modal.classList.remove('hidden-screen');
+
+            let title = "세종대왕의 격려";
+            let content = "";
+            const name = state.userName;
+
+            if (type === 'game1') content = `장하도다, ${name} 학사! 맹수들을 피해 무사히 도착했구나.\n그대의 용기와 끈기를 높이 사노라.`;
+            else if (type === 'game2') content = `집현전을 훌륭히 지켜냈구나, ${name} 학사!\n그대의 뜨거운 열정이 나라를 지키는 불씨가 될 것이다.`;
+            else if (type === 'game3') content = `${name} 학사, 자음의 조화로운 결합 체계를 완벽히 정돈했구나.\n이제 백성들이 글을 깨우칠 날이 머지않았다.`;
+            else if (type === 'game4') content = `${name} 학사가 훈민정음 서문을 훌륭히 써 내려가다니 참으로 감격스럽도다.\n그대의 노고를 진심으로 치하하노라.`;
+
+            titleEl.innerText = title;
+            contentEl.innerText = content;
+            
+            btn.onclick = () => {
+                nextAction();
+            };
+        }
+
+        function showStory(type) {
+            const data = stories[type];
+            document.getElementById('story-title').innerText = data.title;
+            const content = data.content.replace(/{name}/g, state.userName);
+            document.getElementById('story-content').innerText = content;
+            
+            const rewardBox = document.getElementById('story-reward');
+            if (data.piece) {
+                rewardBox.classList.remove('hidden');
+                document.getElementById('story-code-piece').innerText = data.piece;
+                state.passwordPieces[data.slotIdx] = data.piece;
+                updatePasswordUI();
+            } else {
+                rewardBox.classList.add('hidden');
+            }
+            const modal = document.getElementById('story-modal');
+            modal.classList.remove('hidden-screen');
+            document.getElementById('story-btn').onclick = closeStory;
+        }
+
+        function closeStory() {
+            document.getElementById('story-modal').classList.add('hidden-screen');
+            const title = document.getElementById('story-title').innerText;
+
+            if (title === "왕의 밀명") startMinigame('runner');
+            else if (title === "첫 번째 조각") { 
+                state.isRetryMode = false;
+                state.workingList = QUESTION_DATABASE.map((_, i) => i);
+                state.qIndex = 0; 
+                state.wrongQuestions = [];
+                document.getElementById('game-screen').classList.remove('hidden-screen'); 
+                renderQuestion(); 
+            }
+            else if (title === "두 번째 조각") { 
+                state.isRetryMode = false;
+                state.workingList = QUESTION_DATABASE.map((_, i) => i);
+                state.qIndex = 8; 
+                state.wrongQuestions = [];
+                document.getElementById('game-screen').classList.remove('hidden-screen'); 
+                renderQuestion(); 
+            }
+            else if (title === "세 번째 조각") { 
+                state.isRetryMode = false;
+                state.workingList = QUESTION_DATABASE.map((_, i) => i);
+                state.qIndex = 16; 
+                state.wrongQuestions = [];
+                document.getElementById('game-screen').classList.remove('hidden-screen'); 
+                renderQuestion(); 
+            }
+            else if (title === "마지막 조각") {
+                document.getElementById('game-screen').classList.add('hidden-screen');
+                document.getElementById('code-input-screen').classList.remove('hidden-screen');
+            }
+        }
+
+        function updatePasswordUI() { document.getElementById('password-slot').innerText = state.passwordPieces.map(c => c ? c : "?").join(" "); }
+        
+        function renderQuestion() {
+            // 미니게임 게이트 판별 로직
+            if (state.gamesCleared.game2 === false) {
+                if (state.correctCount === 8) { startMinigame('word'); return; }
+                if (state.qIndex >= 8) { enterRetryMode(8); return; }
+            }
+
+            if (state.gamesCleared.game2 === true && state.gamesCleared.game3 === false) {
+                if (state.correctCount === 16) { startMinigame('puzzle'); return; }
+                if (state.qIndex >= 16) { enterRetryMode(16); return; }
+            }
+
+            if (state.gamesCleared.game3 === true && state.gamesCleared.game4 === false) {
+                if (state.correctCount === 24) { startMinigame('typing'); return; }
+                if (state.qIndex >= 24) { enterRetryMode(24); return; }
+            }
+
+            if (state.gamesCleared.game4 === true) {
+                document.getElementById('game-screen').classList.add('hidden-screen');
+                document.getElementById('code-input-screen').classList.remove('hidden-screen');
+                return;
+            }
+
+            const statusDiv = document.getElementById('status-bar');
+            if (state.isRetryMode) {
+                statusDiv.classList.remove('hidden');
+                statusDiv.innerText = `🔥 오답 복습 중 (${state.qIndex + 1}/${state.workingList.length})`;
+            } else {
+                statusDiv.classList.add('hidden');
+            }
+
+            if (state.qIndex >= state.workingList.length) {
+                let target = 8;
+                if (state.gamesCleared.game2) target = 16;
+                if (state.gamesCleared.game3) target = 24;
+                enterRetryMode(target);
+                return;
+            }
+            
+            const qIdx = state.workingList[state.qIndex];
+            const qData = QUESTION_DATABASE[qIdx];
+            if (!qData) { alert("문제 데이터를 불러오는 데 실패했습니다."); return; }
+
+            // 지문 파서 엔진 적용
+            document.getElementById('passage-text').innerHTML = parsePassage(qData.passage);
+            document.getElementById('q-num').innerText = state.isRetryMode ? "복습" : (state.qIndex + 1);
+            
+            // 💡 [수정됨] 문제(q) 내용에도 특수태그 파서를 씌워서 밑줄, 네모칸 등이 작동하게 함
+            document.getElementById('question-text').innerHTML = parsePassage(qData.q);
+            
+            // 💡 [추가됨] 데이터에 보기(bogi)가 존재하면 화면에 예쁘게 파싱해서 렌더링
+            const bogiDiv = document.getElementById('bogi-text');
+            if (qData.bogi) {
+                bogiDiv.innerHTML = parsePassage(qData.bogi);
+                bogiDiv.classList.remove('hidden');
+            } else {
+                bogiDiv.classList.add('hidden');
+            }
+            
+            // 모든 상호작용 컨테이너 숨김
+            document.getElementById('choices-container').classList.add('hidden');
+            document.getElementById('short-answer-container').classList.add('hidden');
+            document.getElementById('classify-container').classList.add('hidden');
+            document.getElementById('connect-container').classList.add('hidden');
+            document.getElementById('sequence-container').classList.add('hidden');
+            document.getElementById('fallback-container').classList.add('hidden');
+
+            const type = qData.type || "choice";
+
+            // === [라우터] 유형별 렌더링 엔진 분기 처리 ===
+            if (type === "choice") {
+                const choicesDiv = document.getElementById('choices-container');
+                choicesDiv.classList.remove('hidden');
+                choicesDiv.innerHTML = "";
+                qData.choices.forEach((choice, idx) => {
+                    const btn = document.createElement('button');
+                    // text-xl(1.5배), p-5(여백 확장), leading-relaxed(줄간격) 적용
+                    // 클래스명 중간에 'serif' 또는 'game-font'를 추가하여 명조/바탕 계열 폰트가 버튼 안에서도 강제 적용되도록 수정
+btn.className = "choice-btn w-full text-left p-5 rounded-xl border-2 border-amber-100 bg-white transition duration-200 text-gray-800 font-bold text-xl leading-relaxed mb-3 serif";
+                    btn.innerHTML = `①②③④⑤`.charAt(idx) + " " + choice;
+                    btn.onclick = () => checkAnswer(idx);
+                    choicesDiv.appendChild(btn);
+                });
+            } 
+            else if (type === "short") {
+                const shortDiv = document.getElementById('short-answer-container');
+                shortDiv.classList.remove('hidden');
+                document.getElementById('short-input').value = "";
+                document.getElementById('short-input').focus();
+            } 
+            else if (type === "classify") {
+                document.getElementById('classify-container').classList.remove('hidden');
+                renderClassifyGame(qData);
+            } 
+            else if (type === "connect") {
+                document.getElementById('connect-container').classList.remove('hidden');
+                renderConnectGame(qData);
+            } 
+            else if (type === "sequence") {
+                document.getElementById('sequence-container').classList.remove('hidden');
+                renderSequenceGame(qData);
+            } 
+            else {
+                // ⚠️ [폴백 시스템] 데이터베이스에 없는 전혀 새로운 유형의 문제 처리
+                const fallbackDiv = document.getElementById('fallback-container');
+                fallbackDiv.classList.remove('hidden');
+                document.getElementById('fallback-input').value = "";
+                document.getElementById('fallback-input').focus();
+            }
+
+            const progress = (state.correctCount / 24) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        // ==========================================
+        // 📦 [프리미엄 유형 1: 분류하기 실시간 렌더러]
+        // ==========================================
+        function renderClassifyGame(qData) {
+            const catA = qData.categories[0];
+            const catB = qData.categories[1];
+
+            if (!state.classifyData || state.classifyData.qIdx !== state.qIndex) {
+                const itemsA = qData.a[0] || [];
+                const itemsB = qData.a[1] || [];
+                const combinedPool = [...itemsA, ...itemsB].sort(() => Math.random() - 0.5);
+                state.classifyData = {
+                    qIdx: state.qIndex,
+                    pool: combinedPool,
+                    bucketA: [],
+                    bucketB: []
+                };
+            }
+
+            const bucketsDiv = document.getElementById('game-classify-buckets');
+            const poolDiv = document.getElementById('game-classify-pool');
+
+            bucketsDiv.innerHTML = `
+                <div class="bg-amber-50 border-2 border-amber-800 rounded-lg p-2.5 text-center">
+                    <span class="text-xs font-bold text-amber-900 serif block mb-2">📥 ${catA}</span>
+                    <div class="space-y-1 min-h-[60px] bg-white/70 rounded p-1 border border-amber-200" id="game-bucket-a-list"></div>
+                </div>
+                <div class="bg-amber-50 border-2 border-amber-800 rounded-lg p-2.5 text-center">
+                    <span class="text-xs font-bold text-amber-900 serif block mb-2">📥 ${catB}</span>
+                    <div class="space-y-1 min-h-[60px] bg-white/70 rounded p-1 border border-amber-200" id="game-bucket-b-list"></div>
+                </div>
+            `;
+
+            // Bucket A 그리기 (터치 시 B로 이동)
+            const bAList = document.getElementById('game-bucket-a-list');
+            if (state.classifyData.bucketA.length === 0) {
+                bAList.innerHTML = `<span class="text-[9px] text-gray-400">비어 있음</span>`;
+            } else {
+                state.classifyData.bucketA.forEach((item, idx) => {
+                    const el = document.createElement('div');
+                    el.className = "bg-indigo-700 text-white text-[10px] font-bold py-1 px-1.5 rounded cursor-pointer hover:bg-indigo-800 transition";
+                    el.innerText = item;
+                    el.onclick = () => {
+                        state.classifyData.bucketA.splice(idx, 1);
+                        state.classifyData.bucketB.push(item);
+                        renderClassifyGame(qData);
+                    };
+                    bAList.appendChild(el);
+                });
+            }
+
+            // Bucket B 그리기 (터치 시 대기 상태로 다시 방출)
+            const bBList = document.getElementById('game-bucket-b-list');
+            if (state.classifyData.bucketB.length === 0) {
+                bBList.innerHTML = `<span class="text-[9px] text-gray-400">비어 있음</span>`;
+            } else {
+                state.classifyData.bucketB.forEach((item, idx) => {
+                    const el = document.createElement('div');
+                    el.className = "bg-emerald-700 text-white text-[10px] font-bold py-1 px-1.5 rounded cursor-pointer hover:bg-emerald-800 transition";
+                    el.innerText = item;
+                    el.onclick = () => {
+                        state.classifyData.bucketB.splice(idx, 1);
+                        state.classifyData.pool.push(item);
+                        renderClassifyGame(qData);
+                    };
+                    bBList.appendChild(el);
+                });
+            }
+
+            // Pool 대기 단어 그리기
+            poolDiv.innerHTML = "";
+            if (state.classifyData.pool.length === 0) {
+                poolDiv.innerHTML = `<span class="text-xs text-indigo-700 font-bold">모든 단어가 상자에 들어갔습니다!</span>`;
+            } else {
+                state.classifyData.pool.forEach((item, idx) => {
+                    const card = document.createElement('span');
+                    card.className = "cursor-pointer bg-white hover:bg-amber-100 text-slate-800 border-2 border-amber-800 font-bold px-2 py-1 rounded text-xs transition shadow-sm";
+                    card.innerText = item;
+                    card.onclick = () => {
+                        state.classifyData.pool.splice(idx, 1);
+                        state.classifyData.bucketA.push(item);
+                        renderClassifyGame(qData);
+                    };
+                    poolDiv.appendChild(card);
+                });
+            }
+        }
+
+        function submitClassifyAnswer() {
+            const qIdx = state.workingList[state.qIndex];
+            const qData = QUESTION_DATABASE[qIdx];
+
+            const sortedCorrectA = [...(qData.a[0] || [])].sort();
+            const sortedCorrectB = [...(qData.a[1] || [])].sort();
+
+            const sortedSubmittedA = [...state.classifyData.bucketA].sort();
+            const sortedSubmittedB = [...state.classifyData.bucketB].sort();
+
+            const isCorrect = JSON.stringify(sortedSubmittedA) === JSON.stringify(sortedCorrectA) &&
+                              JSON.stringify(sortedSubmittedB) === JSON.stringify(sortedCorrectB);
+
+            if (isCorrect) {
+                state.correctCount++;
+                showFeedback(true);
+            } else {
+                state.wrongQuestions.push(qIdx);
+                showFeedback(false);
+            }
+        }
+
+        // ==========================================
+        // 🔗 [프리미엄 유형 2: 선으로 잇기 실시간 렌더러]
+        // ==========================================
+        function renderConnectGame(qData) {
+            if (!state.connectData || state.connectData.qIdx !== state.qIndex) {
+                state.connectData = {
+                    qIdx: state.qIndex,
+                    leftSelected: null,
+                    matches: {} // { leftIndex: rightIndex }
+                };
+            }
+
+            const leftContainer = document.getElementById('game-connect-left-list');
+            const rightContainer = document.getElementById('game-connect-right-list');
+            const statusText = document.getElementById('game-connect-status');
+
+            leftContainer.innerHTML = "";
+            rightContainer.innerHTML = "";
+
+            // Left 항목 그리기
+            qData.left.forEach((item, idx) => {
+                const el = document.createElement('div');
+                const isSelected = state.connectData.leftSelected === idx;
+                const isMatched = state.connectData.matches[idx] !== undefined;
+
+                let bgClass = "bg-white border-amber-200 hover:bg-amber-50";
+                if (isSelected) bgClass = "bg-amber-800 text-white border-amber-900";
+                else if (isMatched) bgClass = "bg-green-50 border-green-300 text-green-800";
+
+                // 💡 padding-right를 늘려 점이 들어갈 자리를 확보합니다.
+                el.className = `p-2.5 rounded text-xs text-left border cursor-pointer font-bold transition relative pr-5 ${bgClass}`;
+                
+                let matchBadge = "";
+                if (isMatched) {
+                    // 항목이 10개까지 늘어날 수 있으므로 배열 확장
+                    const rightLetter = ["가", "나", "다", "라", "마", "바", "사", "아", "자", "차"][state.connectData.matches[idx]] || (state.connectData.matches[idx] + 1);
+                    matchBadge = ` <span class="bg-green-200 text-green-800 text-[10px] px-1 rounded ml-1">🔗 ${rightLetter}</span>`;
+                }
+
+                // 💡 검은색 연결 점을 박스 우측에 부착
+                el.innerHTML = item + matchBadge + `<span class="absolute right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-black rounded-full"></span>`;
+                el.onclick = () => {
+                    state.connectData.leftSelected = idx;
+                    renderConnectGame(qData);
+                };
+                leftContainer.appendChild(el);
+            });
+
+            // Right 항목 그리기
+            qData.right.forEach((item, idx) => {
+                const el = document.createElement('div');
+                const matchedLeftIdx = Object.keys(state.connectData.matches).find(key => state.connectData.matches[key] === idx);
+                const isMatched = matchedLeftIdx !== undefined;
+
+                let bgClass = "bg-white border-amber-200 hover:bg-amber-50";
+                if (isMatched) bgClass = "bg-green-50 border-green-300 text-green-800";
+
+                // 💡 padding-left를 늘려 점이 들어갈 자리를 확보합니다.
+                el.className = `p-2.5 rounded text-xs text-right border cursor-pointer font-bold transition relative pl-5 ${bgClass}`;
+
+                let matchBadge = "";
+                if (isMatched) {
+                    const leftNum = parseInt(matchedLeftIdx) + 1;
+                    matchBadge = `<span class="bg-green-200 text-green-800 text-[10px] px-1 rounded mr-1">🔗 ${leftNum}번</span> `;
+                }
+
+                // 💡 검은색 연결 점을 박스 좌측에 부착
+                el.innerHTML = `<span class="absolute left-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-black rounded-full"></span>` + matchBadge + item;
+                el.onclick = () => {
+                    if (state.connectData.leftSelected !== null) {
+                        state.connectData.matches[state.connectData.leftSelected] = idx;
+                        state.connectData.leftSelected = null; // 선택 초기화
+                        renderConnectGame(qData);
+                    } else {
+                        statusText.innerText = "⚠️ 매칭 실패! 먼저 왼쪽 번호를 하나 선택한 뒤 알맞은 짝을 터치하세요.";
+                        setTimeout(() => {
+                            statusText.innerText = "왼쪽 항목을 선택한 후 알맞은 오른쪽 항목을 터치하세요.";
+                        }, 2000);
+                    }
+                };
+                rightContainer.appendChild(el);
+            });
+        }
+
+        function submitConnectAnswer() {
+            const qIdx = state.workingList[state.qIndex];
+            const qData = QUESTION_DATABASE[qIdx];
+
+            const correctMatches = qData.a.map(pair => pair.trim());
+            const submittedMatches = [];
+
+            for (const [leftIdx, rightIdx] of Object.entries(state.connectData.matches)) {
+                submittedMatches.push(`${leftIdx}-${rightIdx}`);
+            }
+
+            const isCorrect = correctMatches.length === submittedMatches.length &&
+                              correctMatches.every(m => submittedMatches.includes(m));
+
+            if (isCorrect) {
+                state.correctCount++;
+                showFeedback(true);
+            } else {
+                state.wrongQuestions.push(qIdx);
+                showFeedback(false);
+            }
+        }
+
+        // ==========================================
+        // 🔢 [프리미엄 유형 3: 순서배치 실시간 렌더러]
+        // ==========================================
+        function renderSequenceGame(qData) {
+            if (!state.sequenceData || state.sequenceData.qIdx !== state.qIndex) {
+                state.sequenceData = {
+                    qIdx: state.qIndex,
+                    pool: [...qData.choices].sort(() => Math.random() - 0.5),
+                    result: []
+                };
+            }
+
+            const poolContainer = document.getElementById('game-sequence-pool');
+            const resultContainer = document.getElementById('game-sequence-result');
+
+            poolContainer.innerHTML = "";
+            resultContainer.innerHTML = "";
+
+            // 선택 대기 풀 그리기
+            if (state.sequenceData.pool.length === 0) {
+                poolContainer.innerHTML = `<span class="text-xs text-gray-400 font-bold">모든 조각이 아래에 배치되었습니다.</span>`;
+            } else {
+                state.sequenceData.pool.forEach((item, idx) => {
+                    const card = document.createElement('span');
+                    card.className = "cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 font-bold px-2.5 py-1 rounded text-xs transition";
+                    card.innerText = item;
+                    card.onclick = () => {
+                        state.sequenceData.pool.splice(idx, 1);
+                        state.sequenceData.result.push(item);
+                        renderSequenceGame(qData);
+                    };
+                    poolContainer.appendChild(card);
+                });
+            }
+
+            // 배치된 순서 영역 그리기
+            if (state.sequenceData.result.length === 0) {
+                resultContainer.innerHTML = `<span class="text-xs text-gray-400">카드를 눌러 정렬하세요.</span>`;
+            } else {
+                state.sequenceData.result.forEach((item, idx) => {
+                    const card = document.createElement('span');
+                    card.className = "cursor-pointer bg-amber-800 text-white font-bold px-2 py-1 rounded text-xs hover:bg-amber-900 transition";
+                    card.innerText = `${idx + 1}. ${item}`;
+                    card.onclick = () => {
+                        state.sequenceData.result.splice(idx, 1);
+                        state.sequenceData.pool.push(item);
+                        renderSequenceGame(qData);
+                    };
+                    resultContainer.appendChild(card);
+                });
+            }
+        }
+
+        function submitSequenceAnswer() {
+            const qIdx = state.workingList[state.qIndex];
+            const qData = QUESTION_DATABASE[qIdx];
+
+            // 올바른 원래 순서 텍스트 배열 생성
+            const correctOrderTexts = qData.a.map(originalIdx => qData.choices[originalIdx]);
+            const submittedTexts = state.sequenceData.result;
+
+            const isCorrect = JSON.stringify(correctOrderTexts) === JSON.stringify(submittedTexts);
+
+            if (isCorrect) {
+                state.correctCount++;
+                showFeedback(true);
+            } else {
+                state.wrongQuestions.push(qIdx);
+                showFeedback(false);
+            }
+        }
+
+        // ==========================================
+        // 🛡️ [자가 보존 모드: 폴백 제출 처리]
+        // ==========================================
+        function submitFallbackAnswer() {
+            const qIdx = state.workingList[state.qIndex];
+            const qData = QUESTION_DATABASE[qIdx];
+            const inputVal = document.getElementById('fallback-input').value.trim().replace(/\s+/g, "").toLowerCase();
+
+            let isCorrect = false;
+
+            // 주관식형 정답 리스트인 경우 비교 대응
+            if (Array.isArray(qData.a)) {
+                isCorrect = qData.a.some(ans => String(ans).trim().replace(/\s+/g, "").toLowerCase() === inputVal);
+            } else {
+                isCorrect = String(qData.a).trim().replace(/\s+/g, "").toLowerCase() === inputVal;
+            }
+
+            if (isCorrect) {
+                state.correctCount++;
+                showFeedback(true);
+            } else {
+                state.wrongQuestions.push(qIdx);
+                showFeedback(false);
+            }
+        }
+
+        // ==========================================
+        // 🔄 [오답 처리 및 기획 루프]
+        // ==========================================
+        function enterRetryMode(targetCount) {
+            if (!state.isRetryMode || state.wrongQuestions.length > 0) {
+                 alert(`⚠️ 정답 개수가 부족합니다!\n현재 정답수: ${state.correctCount} / 목표치: ${targetCount}\n\n틀렸던 문제를 올바르게 다시 해결해야 다음 장소로 나아갈 수 있습니다.`);
+            }
+            
+            if (state.wrongQuestions.length === 0) {
+                state.wrongQuestions = state.workingList.slice(0, targetCount - state.correctCount); 
+            }
+
+            state.workingList = [...state.wrongQuestions]; 
+            state.wrongQuestions = []; 
+            state.qIndex = 0;
+            state.isRetryMode = true; 
+            renderQuestion();
+        }
+
+        // 객관식 답변 채점
+        function checkAnswer(selectedIdx) {
+             const qIdx = state.workingList[state.qIndex];
+             const qData = QUESTION_DATABASE[qIdx];
+             if (selectedIdx === qData.a) { state.correctCount++; showFeedback(true); }
+             else { state.wrongQuestions.push(qIdx); showFeedback(false); }
+        }
+
+        // 주관식 단답형 답변 채점
+        function submitShortAnswer() {
+            const qIdx = state.workingList[state.qIndex];
+            const qData = QUESTION_DATABASE[qIdx];
+            const inputVal = document.getElementById('short-input').value.trim().replace(/\s+/g, "").toLowerCase(); // 💡 영문 소문자 통일 추가
+            
+            // 💡 [수정됨] 정답이 배열이든 일반 문자열이든 가리지 않고 에러 없이 채점하도록 방어 로직 강화
+            let isCorrect = false;
+            if (Array.isArray(qData.a)) {
+                isCorrect = qData.a.some(ans => String(ans).trim().replace(/\s+/g, "").toLowerCase() === inputVal);
+            } else {
+                isCorrect = String(qData.a).trim().replace(/\s+/g, "").toLowerCase() === inputVal;
+            }
+            
+            if (isCorrect) {
+                state.correctCount++;
+                showFeedback(true);
+            } else {
+                state.wrongQuestions.push(qIdx);
+                showFeedback(false);
+            }
+        }
+
+        function showFeedback(isCorrect) {
+            const modal = document.getElementById('feedback-modal');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const msg = document.getElementById('feedback-message');
+            modal.classList.remove('hidden-screen');
+            if (isCorrect) {
+                icon.innerText = "⭕";
+                title.innerText = "정답이오!";
+                msg.innerText = `현재 총 획득 점수: ${state.correctCount} / 24`;
+                title.className = "text-xl font-bold mb-1 serif text-green-600";
+            } else {
+                icon.innerText = "❌";
+                title.innerText = "틀렸소...";
+                msg.innerText = "오답 장부에 기록하여 기회를 다시 주겠소.";
+                title.className = "text-xl font-bold mb-1 serif text-red-600";
+            }
+        }
+
+        function nextStep() {
+            document.getElementById('feedback-modal').classList.add('hidden-screen');
+            state.qIndex++;
+            renderQuestion();
+        }
+
+        function startMinigame(id) {
+            document.getElementById('game-screen').classList.add('hidden-screen');
+            if(id === 'runner') startRunner();
+            if(id === 'word') startWordGame();
+            if(id === 'puzzle') startPuzzleGame(); 
+            if(id === 'typing') startTypingGame(); 
+        }
+
+        function finishMinigame(id) {
+            let targetScreenId = id + '-screen'; 
+            if (id === 'runner') targetScreenId = 'game1-screen';
+            else if (id === 'word') targetScreenId = 'game2-screen';
+            else if (id === 'puzzle') targetScreenId = 'game3-screen'; 
+            else if (id === 'typing') targetScreenId = 'game4-screen'; 
+            
+            const el = document.getElementById(targetScreenId);
+            if(el) el.classList.add('hidden-screen');
+
+            if(id === 'runner') showEncouragement('game1', () => showStory('code1'));
+            else if(id === 'word') { state.gamesCleared.game2 = true; showEncouragement('game2', () => showStory('code2')); }
+            else if(id === 'puzzle') { state.gamesCleared.game3 = true; showEncouragement('game3', () => showStory('code3')); }
+            else if(id === 'typing') { state.gamesCleared.game4 = true; showEncouragement('game4', () => showStory('code4')); }
+        }
+
+        /* --- Game 1: Runner --- */
+        let runnerCtx, runnerAnim, runnerPlayer, runnerObstacles = [], runnerClouds = [], runnerMountains = [], runnerFrame = 0, runnerPlaying = false;
+        let runnerInput = { left: false, right: false, up: false };
+        let lastTime = 0; 
+        
+        const GRAVITY_BASE = 0.6;
+        const JUMP_POWER_BASE = -13; 
+        const MOVE_SPEED_BASE = 5;
+
+        const GAME_WIDTH = 8000;
+        const METER_RATIO = 4;
+        const HARD_MODE_START_PX = 4000;
+        let isRunnerGameOver = false;
+
+        function startRunner() {
+            const screen = document.getElementById('game1-screen');
+            screen.classList.remove('hidden-screen');
+            const cvs = document.getElementById('runner-canvas');
+            runnerCtx = cvs.getContext('2d');
+            
+            setupTouchControls();
+
+            if(runnerAnim) cancelAnimationFrame(runnerAnim);
+            runnerCtx.setTransform(1, 0, 0, 1, 0, 0);
+            runnerPlayer = { x: 50, y: 260, vx: 0, vy: 0, width: 40, height: 40, isGrounded: true, facingRight: true, worldX: 0 };
+            runnerInput = { left: false, right: false, up: false };
+            initRunnerWorld();
+            runnerFrame = 0;
+            runnerPlaying = true;
+            isRunnerGameOver = false;
+            lastTime = performance.now(); 
+
+            document.getElementById('runner-dist').innerText = "남은 거리: 2000m";
+            document.getElementById('runner-overlay').classList.remove('hidden');
+            document.getElementById('runner-msg-overlay').classList.add('hidden');
+            let count = 3;
+            const overlayText = document.getElementById('runner-countdown-text');
+            if(overlayText) overlayText.innerText = count;
+            if (window.runnerCountdownInterval) clearInterval(window.runnerCountdownInterval);
+            window.runnerCountdownInterval = setInterval(() => {
+                count--;
+                if(overlayText) overlayText.innerText = count;
+                if (count <= 0) {
+                    clearInterval(window.runnerCountdownInterval);
+                    document.getElementById('runner-overlay').classList.add('hidden');
+                    lastTime = performance.now(); 
+                    runnerAnim = requestAnimationFrame(runnerLoop); 
+                }
+            }, 1000);
+        }
+        
+        function setupTouchControls() {
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
+            const btnJump = document.getElementById('btn-jump');
+
+            const addTouch = (elem, inputKey) => {
+                elem.addEventListener('touchstart', (e) => { e.preventDefault(); runnerInput[inputKey] = true; elem.classList.add('active'); }, {passive: false});
+                elem.addEventListener('touchend', (e) => { e.preventDefault(); runnerInput[inputKey] = false; elem.classList.remove('active'); }, {passive: false});
+                elem.addEventListener('mousedown', () => { runnerInput[inputKey] = true; });
+                elem.addEventListener('mouseup', () => { runnerInput[inputKey] = false; });
+                elem.addEventListener('mouseleave', () => { runnerInput[inputKey] = false; });
+            };
+
+            addTouch(btnLeft, 'left');
+            addTouch(btnRight, 'right');
+            
+            btnJump.addEventListener('touchstart', (e) => { e.preventDefault(); runnerJump(); btnJump.classList.add('active'); }, {passive: false});
+            btnJump.addEventListener('touchend', (e) => { e.preventDefault(); btnJump.classList.remove('active'); }, {passive: false});
+            btnJump.addEventListener('mousedown', () => runnerJump());
+        }
+
+        function resetRunnerToTitle() {
+            runnerPlaying = false;
+            cancelAnimationFrame(runnerAnim);
+            document.getElementById('runner-msg-overlay').classList.add('hidden');
+            startRunner(); 
+        }
+
+        function initRunnerWorld() {
+             runnerObstacles = []; runnerClouds = []; runnerMountains = [];
+             let currentX = 600;
+             while(currentX < GAME_WIDTH - 500) {
+                 let gap = 150 + Math.random() * 300; 
+                 if (currentX > HARD_MODE_START_PX) gap = (150 + Math.random() * 250); 
+                 currentX += gap;
+                 if (currentX > HARD_MODE_START_PX && Math.random() > 0.85) continue;
+                 let type = Math.random() > 0.5 ? 'tiger' : 'leopard';
+                 let isHardMode = currentX > HARD_MODE_START_PX;
+                 let canJump = isHardMode; 
+                 let canMove = isHardMode && (Math.random() < 0.4); 
+                 runnerObstacles.push({x: currentX, startX: currentX, y: 260, vx: 0, vy: 0, w: 80, h: 60, type: type, canJump: canJump, isJumping: false, canMove: canMove});
+             }
+             for(let i=0; i<40; i++) runnerClouds.push({ x: Math.random()*GAME_WIDTH, y: Math.random()*150, w: 40 + Math.random()*30, h: 20 + Math.random()*15 });
+             for(let i=0; i<30; i++) runnerMountains.push({ x: i*700+Math.random()*200, y: 300, h: 100+Math.random()*150, w: 300+Math.random()*200, color: `hsl(120, ${20+Math.random()*20}%, ${30+Math.random()*10}%)` });
+        }
+
+        function runnerJump() { if(runnerPlayer.isGrounded) { runnerPlayer.vy = JUMP_POWER_BASE; runnerPlayer.isGrounded = false; } }
+
+        function runnerLoop(timestamp) {
+            if(!runnerPlaying) return;
+
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            const timeScale = deltaTime / (1000 / 60);
+
+            if (runnerInput.right) { runnerPlayer.vx = MOVE_SPEED_BASE; runnerPlayer.facingRight = true; }
+            else if (runnerInput.left) { runnerPlayer.vx = -MOVE_SPEED_BASE; runnerPlayer.facingRight = false; }
+            else { runnerPlayer.vx = 0; }
+            
+            if (runnerInput.up) runnerJump(); 
+
+            runnerPlayer.vy += GRAVITY_BASE * timeScale;
+            runnerPlayer.y += runnerPlayer.vy * timeScale;
+            
+            if(runnerPlayer.y >= 260) { runnerPlayer.y = 260; runnerPlayer.vy = 0; runnerPlayer.isGrounded = true; }
+            
+            let nextWorldX = runnerPlayer.worldX + (runnerPlayer.vx * timeScale);
+            if (nextWorldX < 0) nextWorldX = 0;
+            if (nextWorldX > GAME_WIDTH + 400) nextWorldX = GAME_WIDTH + 400;
+            runnerPlayer.worldX = nextWorldX;
+
+            runnerCtx.setTransform(1, 0, 0, 1, 0, 0);
+            runnerCtx.clearRect(0,0,640,360);
+            
+            let cameraX = runnerPlayer.worldX - 200;
+            if (cameraX < 0) cameraX = 0;
+            
+            let grad = runnerCtx.createLinearGradient(0, 0, 0, 360);
+            grad.addColorStop(0, "#87CEEB"); grad.addColorStop(1, "#E0F7FA");
+            runnerCtx.fillStyle = grad; runnerCtx.fillRect(0, 0, 640, 360);
+            
+            runnerCtx.save(); runnerCtx.translate(-cameraX * 0.2, 0);
+            for (let m of runnerMountains) {
+                runnerCtx.fillStyle = m.color;
+                runnerCtx.beginPath(); runnerCtx.moveTo(m.x, 300); runnerCtx.lineTo(m.x + m.w/2, 300 - m.h); runnerCtx.lineTo(m.x + m.w, 300); runnerCtx.fill();
+            }
+            runnerCtx.restore();
+            
+            runnerCtx.save(); runnerCtx.translate(-cameraX * 0.5, 0);
+            runnerCtx.fillStyle = "rgba(255, 255, 255, 0.9)"; 
+            for (let c of runnerClouds) {
+                runnerCtx.beginPath(); 
+                runnerCtx.ellipse(c.x, c.y, c.w, c.h, 0, 0, Math.PI*2); 
+                runnerCtx.fill();
+            }
+            runnerCtx.restore();
+            
+            runnerCtx.save(); runnerCtx.translate(-cameraX, 0);
+            runnerCtx.fillStyle = "#8D6E63"; runnerCtx.fillRect(0, 300, GAME_WIDTH + 1000, 60);
+            drawPalace(runnerCtx, GAME_WIDTH + 100, 300);
+            runnerCtx.font = "20px serif"; runnerCtx.fillStyle = "black"; runnerCtx.textAlign = "center";
+            runnerCtx.fillText("짐이 여기 있다!", GAME_WIDTH + 100, 120);
+            
+            runnerCtx.font = "70px serif"; runnerCtx.textBaseline = "bottom"; runnerCtx.textAlign = "center";
+            for(let obs of runnerObstacles) {
+                if (Math.abs(obs.x - runnerPlayer.worldX) < 1000) {
+                     if (obs.canJump && !obs.isJumping) { 
+                         if (Math.abs(obs.x - runnerPlayer.worldX) < 200 && runnerPlayer.isGrounded) { 
+                             obs.vy = -7; 
+                             obs.isJumping = true; 
+                        } 
+                    }
+                     
+                     if (obs.canMove) { 
+                         if (Math.abs(obs.x - runnerPlayer.worldX) < 400) { 
+                             if (obs.x > runnerPlayer.worldX) obs.vx = -2.5; else obs.vx = 1.0; 
+                        } else obs.vx = 0; 
+                        obs.x += obs.vx * timeScale; 
+                    }
+                     
+                     if (obs.y < 260 || obs.vy !== 0) { 
+                         obs.vy += GRAVITY_BASE * timeScale; 
+                         obs.y += obs.vy * timeScale; 
+                         if (obs.y >= 260) { obs.y = 260; obs.vy = 0; obs.isJumping = false; } 
+                    }
+                    
+                    if (obs.x > cameraX - 100 && obs.x < cameraX + 700) {
+                         runnerCtx.save(); runnerCtx.translate(obs.x + 40, obs.y + 60);
+                         if (obs.vx > 0) runnerCtx.scale(-1, 1); else runnerCtx.scale(1, 1);
+                         runnerCtx.fillText(obs.type === 'tiger' ? "🐅" : "🐆", 0, 0);
+                         runnerCtx.restore();
+                    }
+                    
+                    let pRect = {l: runnerPlayer.worldX+10, r: runnerPlayer.worldX+30, t: runnerPlayer.y+10, b: runnerPlayer.y+40};
+                    let oRect = {l: obs.x+10, r: obs.x+70, t: obs.y+15, b: obs.y+60};
+                    if (pRect.r > oRect.l && pRect.l < oRect.r && pRect.b > oRect.t && pRect.t < oRect.b) {
+                        runnerGameOver(false); return;
+                    }
+                }
+            }
+            
+            drawScholar(runnerCtx, runnerPlayer.worldX + 20, runnerPlayer.y + 40, runnerPlayer.facingRight, Math.abs(runnerPlayer.vx) > 0, !runnerPlayer.isGrounded);
+            
+            runnerCtx.fillStyle = "#43A047"; 
+            let startGrass = Math.floor(cameraX / 5) * 5; 
+            for(let i = startGrass; i < startGrass + 800; i+=5) { 
+                let h = (15 + Math.abs(Math.sin(i * 0.1)) * 10) * 2; 
+                runnerCtx.beginPath();
+                runnerCtx.moveTo(i, 320); 
+                runnerCtx.lineTo(i + 2.5, 320 - h); 
+                runnerCtx.lineTo(i + 5, 320); 
+                runnerCtx.fill();
+            }
+            runnerCtx.restore();
+            
+            let remainingPixels = GAME_WIDTH - runnerPlayer.worldX;
+            let displayMeters = Math.max(0, Math.floor(remainingPixels / METER_RATIO));
+            document.getElementById('runner-dist').innerText = `남은 거리: ${displayMeters}m`;
+            
+            if(remainingPixels <= 0) { runnerGameOver(true); return; }
+            
+            runnerFrame++;
+            runnerAnim = requestAnimationFrame(runnerLoop);
+        }
+
+        function drawScholar(ctx, x, y, facingRight, isMoving, isJumping) {
+            ctx.save();
+            ctx.translate(x, y);
+            if (!facingRight) ctx.scale(-1, 1);
+            let limbAngle = 0;
+            let armAngle = 0;
+            let bounce = 0;
+            if (isMoving && !isJumping) {
+                limbAngle = Math.sin(runnerFrame * 0.3) * 0.8; 
+                armAngle = -limbAngle; 
+                bounce = Math.abs(Math.sin(runnerFrame * 0.3)) * 5;
+            } else if (isJumping) {
+                limbAngle = 0.5;
+                armAngle = -0.8; 
+            }
+            ctx.translate(0, -20 - bounce);
+            ctx.lineWidth = 4; ctx.lineCap = "round";
+            ctx.strokeStyle = "black";
+            ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(-10 - (limbAngle*10), 20); ctx.stroke(); 
+            ctx.strokeStyle = "black";
+            ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(10 + (limbAngle*10), 20); ctx.stroke();
+            ctx.strokeStyle = "#D7CCC8"; 
+            ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(10 + (armAngle*10), -5 + Math.abs(armAngle)*3); ctx.stroke();
+            ctx.fillStyle = "#FFFFFF"; 
+            ctx.beginPath();
+            ctx.moveTo(-9, -25); 
+            ctx.lineTo(9, -25); 
+            ctx.lineTo(14, 15); 
+            ctx.lineTo(-14, 15); 
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = "#E0E0E0"; ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = "#3E2723"; ctx.fillRect(-10, -15, 20, 4);
+            ctx.strokeStyle = "#FFFFFF"; ctx.lineWidth = 4; 
+            ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(-10 - (armAngle*10), -5 + Math.abs(armAngle)*3); ctx.stroke();
+            ctx.fillStyle = "#FFCC80";
+            ctx.beginPath(); ctx.arc(-10 - (armAngle*10), -5 + Math.abs(armAngle)*3, 3, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#FFCC80"; ctx.beginPath(); ctx.arc(2, -30, 9, 0, Math.PI*2); ctx.fill(); 
+            ctx.fillStyle = "black"; 
+            ctx.beginPath(); ctx.arc(6, -33, 1.5, 0, Math.PI*2); ctx.fill(); 
+            ctx.strokeStyle = "black"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(11, -30); ctx.lineTo(8, -32); ctx.stroke();
+            ctx.beginPath(); ctx.arc(4, -28, 3, 0, 0.5*Math.PI); ctx.stroke();
+            ctx.fillStyle = "black"; 
+            ctx.fillRect(-10, -38, 24, 4); 
+            ctx.fillRect(-6, -48, 14, 10); 
+            ctx.strokeStyle = "black"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(2, -38); ctx.quadraticCurveTo(-4, -30, -2, -25); ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawPalace(ctx, x, y) { 
+            ctx.save(); ctx.translate(x, y);
+            ctx.fillStyle = "#E0E0E0"; 
+            ctx.fillRect(-80, -60, 160, 60);
+            ctx.strokeStyle = "#BDBDBD"; ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-80, -40); ctx.lineTo(80, -40);
+            ctx.moveTo(-80, -20); ctx.lineTo(80, -20);
+            ctx.stroke();
+            ctx.fillStyle = "#3E2723"; 
+            ctx.beginPath(); ctx.arc(0, 0, 20, Math.PI, 0); ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-40, 0, 15, Math.PI, 0); ctx.fill(); 
+            ctx.beginPath(); ctx.arc(40, 0, 15, Math.PI, 0); ctx.fill(); 
+            ctx.fillStyle = "#B71C1C"; 
+            ctx.fillRect(-70, -90, 140, 30);
+            ctx.fillStyle = "#424242"; 
+            ctx.beginPath();
+            ctx.moveTo(-85, -90);
+            ctx.quadraticCurveTo(-70, -85, -60, -105); 
+            ctx.lineTo(60, -105);
+            ctx.quadraticCurveTo(70, -85, 85, -90); 
+            ctx.lineTo(70, -75); 
+            ctx.lineTo(-70, -75);
+            ctx.fill();
+            ctx.fillStyle = "#B71C1C";
+            ctx.fillRect(-50, -125, 100, 20);
+            ctx.fillStyle = "#424242";
+            ctx.beginPath();
+            ctx.moveTo(-90, -125); 
+            ctx.quadraticCurveTo(-70, -115, -50, -145);
+            ctx.lineTo(50, -145);
+            ctx.quadraticCurveTo(70, -115, 90, -125);
+            ctx.lineTo(70, -105);
+            ctx.lineTo(-70, -105);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.fillRect(-15, -115, 30, 10);
+            ctx.fillStyle = "gold";
+            ctx.font = "8px serif";
+            ctx.fillText("광화문", 0, -108);
+            ctx.restore();
+        }
+
+        async function runnerGameOver(isWin) {
+            runnerPlaying = false;
+            cancelAnimationFrame(runnerAnim);
+            isRunnerGameOver = true;
+            const msgOverlay = document.getElementById('runner-msg-overlay');
+            const msgContent = document.getElementById('runner-msg-content');
+            msgOverlay.classList.remove('hidden');
+            if (isWin) {
+                msgContent.innerHTML = `<div class="animate-bounce flex flex-col items-center"><img src="https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNTA1MjFfNzYg%2FMDAxNzQ3NzUzNzU5MjQ0.LDpXRWHsFBgQGE1bb_gAKvbWmIkJxgCUn3hh9qhqkN4g.iJdrxdC4S3QhAKOtBv2et-OdigDGk1sZpMqezdVTBxIg.JPEG%2FIMG%25A3%25DF0199.JPG&type=a340" alt="왕관" class="w-20 h-20 mb-4 object-contain"><h3 class="text-3xl font-bold mb-2">알현 성공!</h3><p class="text-amber-100 italic">"장하도다! 그대의 끈기가 대단하구나."</p></div>`;
+                 setTimeout(() => finishMinigame('runner'), 2000);
+            } else {
+                msgContent.innerHTML = `<div><p class="text-6xl mb-4">🐯</p><h3 class="text-3xl font-bold mb-2">맹수를 만났다!</h3><p class="text-gray-200 italic">"저런, 다시 한번 힘을 내어 보거라."</p><p class="text-xs text-gray-300 mt-4">(아무 키나 눌러 재시작)</p></div>`;
+                msgOverlay.onclick = resetRunnerToTitle; 
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+             if(!document.getElementById('game1-screen').classList.contains('hidden-screen')) {
+                 if (isRunnerGameOver && !runnerPlaying) {
+                     resetRunnerToTitle();
+                     return;
+                 }
+                 if(e.code === 'ArrowLeft') runnerInput.left = true;
+                 if(e.code === 'ArrowRight') runnerInput.right = true;
+                 if(e.code === 'Space' || e.code === 'ArrowUp') runnerInput.up = true;
+             }
+        });
+        document.addEventListener('keyup', (e) => {
+             if(e.code === 'ArrowLeft') runnerInput.left = false;
+             if(e.code === 'ArrowRight') runnerInput.right = false;
+             if(e.code === 'Space' || e.code === 'ArrowUp') runnerInput.up = false;
+        });
+
+        /* --- Game 2: Word Defense --- */
+        let wordGameInterval, wordSpawnInterval;
+        let wordList = [];
+        let game2Hp = 5;
+        let game2Remaining = 10;
+        let failedWords = []; 
+        
+        const trickyWords = [
+            "금세", "요새", "일일이", "곰곰이", "틈틈이", 
+            "오뚝이", "며칠", "설거지", "빈털터리", "건더기"
+        ];
+        
+        function startWordGame() {
+            document.getElementById('game2-screen').classList.remove('hidden-screen');
+            const storyOverlay = document.getElementById('game2-story-overlay');
+            storyOverlay.classList.remove('hidden');
+        }
+        
+        function startWordGameReal() {
+            document.getElementById('game2-story-overlay').classList.add('hidden');
+            document.getElementById('game2-overlay').classList.add('hidden');
+            document.getElementById('word-rain-area').innerHTML = '';
+            document.getElementById('word-input').value = '';
+            document.getElementById('word-input').focus();
+            
+            wordList = [];
+            failedWords = []; 
+            game2Hp = 5;
+            game2Remaining = 10;
+            
+            updateGame2UI();
+            
+            let palaceCanvas = document.getElementById('game2-palace-canvas');
+            if (!palaceCanvas) {
+                palaceCanvas = document.createElement('canvas');
+                palaceCanvas.id = 'game2-palace-canvas';
+                palaceCanvas.width = 120; 
+                palaceCanvas.height = 80;
+            }
+            const ctx = palaceCanvas.getContext('2d');
+            ctx.clearRect(0,0,120,80);
+            ctx.save();
+            ctx.scale(0.6, 0.6); 
+            drawPalace(ctx, 100, 100); 
+            ctx.restore();
+
+            let spawnIndex = 0;
+            clearInterval(wordSpawnInterval);
+            
+            const spawnNextWord = () => {
+                if (game2Hp <= 0) return;
+                let nextWordText = "";
+                if (spawnIndex < trickyWords.length) {
+                    nextWordText = trickyWords[spawnIndex];
+                    spawnIndex++;
+                } else if (wordList.length === 0 && failedWords.length > 0) {
+                    nextWordText = failedWords.shift(); 
+                }
+                if (nextWordText) spawnWord(nextWordText);
+            };
+
+            wordSpawnInterval = setInterval(() => {
+                if (spawnIndex >= trickyWords.length && wordList.length > 0) return; 
+                spawnNextWord();
+                if (spawnIndex >= trickyWords.length && failedWords.length === 0 && wordList.length === 0) {
+                    clearInterval(wordSpawnInterval);
+                }
+            }, 2000); 
+
+            clearInterval(wordGameInterval);
+            wordGameInterval = setInterval(game2Loop, 100); 
+
+            document.getElementById('word-input').onkeydown = (e) => {
+                if(e.key === 'Enter') {
+                    const val = e.target.value.trim();
+                    const idx = wordList.findIndex(w => w.text === val);
+                    if(idx !== -1) {
+                        wordList[idx].el.remove(); 
+                        wordList.splice(idx, 1);   
+                        game2Remaining--;
+                        updateGame2UI();
+                        e.target.value = ''; 
+                        if(game2Remaining <= 0) endGame2(true);
+                    } else {
+                        e.target.value = ''; 
+                    }
+                }
+            };
+        }
+
+        function spawnWord(text) {
+            const el = document.createElement('div');
+            el.className = 'falling-word';
+            el.innerText = text;
+            const startX = 150 + (Math.random() * 100 - 50); 
+            el.style.left = startX + 'px';
+            el.style.top = '0px';
+            document.getElementById('word-rain-area').appendChild(el);
+            const direction = Math.random() > 0.5 ? 1 : -1;
+            wordList.push({ el: el, text: text, x: startX, y: 0, dir: direction, speedX: 10, speedY: 10 });
+        }
+
+        function game2Loop() {
+            if (game2Hp <= 0) return;
+            const areaWidth = 400; const areaHeight = 350; 
+            for (let i = wordList.length - 1; i >= 0; i--) {
+                const word = wordList[i];
+                word.x += word.dir * word.speedX;
+                if (word.x < 10 || word.x > areaWidth - 60) { word.dir *= -1; word.y += 20; } else { word.y += 4; }
+                word.el.style.left = word.x + 'px';
+                word.el.style.top = word.y + 'px';
+                if (word.y > areaHeight) {
+                    failedWords.push(word.text);
+                    word.el.remove();
+                    wordList.splice(i, 1);
+                    game2Hp--;
+                    updateGame2UI();
+                    const screen = document.getElementById('game2-screen');
+                    screen.classList.add('animate-pulse');
+                    setTimeout(() => screen.classList.remove('animate-pulse'), 200);
+                    if (game2Hp <= 0) endGame2(false);
+                }
+            }
+        }
+
+        function updateGame2UI() {
+            document.getElementById('word-score').innerText = `남은 단어: ${game2Remaining}`;
+            let hearts = "";
+            for(let i=0; i<5; i++) {
+                if(i < game2Hp) hearts += "❤️"; else hearts += "🤍";
+            }
+            document.getElementById('game2-hp-bar').innerHTML = hearts;
+        }
+
+        function endGame2(isWin) {
+            clearInterval(wordGameInterval);
+            clearInterval(wordSpawnInterval);
+            if (isWin) {
+                alert("집현전을 무사히 지켜냈습니다!");
+                finishMinigame('word');
+            } else {
+                const overlay = document.getElementById('game2-overlay');
+                overlay.classList.remove('hidden');
+                let count = 3;
+                const timer = setInterval(() => {
+                    count--;
+                    if(count <= 0) {
+                        clearInterval(timer);
+                        startWordGameReal(); 
+                    }
+                }, 1000);
+            }
+        }
+
+        /* --- Game 3: Puzzle --- */
+        const consonants = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ', '완성'];
+        const puzzleAnswerIdx = Array.from({length: 16}, (_, i) => i); 
+        let currentPuzzleIdx = [];
+
+        function startPuzzleGame() {
+            document.getElementById('game3-screen').classList.remove('hidden-screen');
+            shufflePuzzle();
+        }
+        
+        function shufflePuzzle() {
+            let solvable = false;
+            while (!solvable) {
+                currentPuzzleIdx = [...puzzleAnswerIdx].sort(() => Math.random() - 0.5);
+                solvable = checkSolvability(currentPuzzleIdx);
+            }
+            renderPuzzle();
+        }
+
+        function checkSolvability(arr) {
+            let inversions = 0;
+            const tiles = arr.filter(x => x !== 15); 
+            
+            for (let i = 0; i < tiles.length - 1; i++) {
+                for (let j = i + 1; j < tiles.length; j++) {
+                    if (tiles[i] > tiles[j]) inversions++;
+                }
+            }
+            
+            const emptyIdx = arr.indexOf(15);
+            const emptyRowFromTop = Math.floor(emptyIdx / 4); 
+            const emptyRowFromBottom = 4 - emptyRowFromTop;   
+            
+            if (emptyRowFromBottom % 2 === 0) { 
+                return (inversions % 2 !== 0); 
+            } else { 
+                return (inversions % 2 === 0); 
+            }
+        }
+        
+        function renderPuzzle() {
+            const board = document.getElementById('puzzle-board');
+            board.innerHTML = '';
+            currentPuzzleIdx.forEach((val, idx) => {
+                const tile = document.createElement('div');
+                const isEmpty = val === 15;
+                const isSpecial = val === 14;
+                
+                tile.className = `puzzle-tile ${isEmpty ? 'empty' : ''} ${isSpecial ? 'special' : ''}`;
+                
+                if(!isEmpty) {
+                    tile.innerText = consonants[val];
+                }
+                
+                tile.onclick = () => moveTile(idx);
+                board.appendChild(tile);
+            });
+            
+            const isWin = currentPuzzleIdx.slice(0, 15).every((val, i) => val === i);
+            if(isWin) {
+                setTimeout(() => finishMinigame('puzzle'), 500);
+            }
+        }
+        
+        function moveTile(idx) {
+            if (currentPuzzleIdx[idx] === 15) return;
+
+            const neighbors = [];
+            if (idx >= 4) neighbors.push(idx - 4); 
+            if (idx < 12) neighbors.push(idx + 4); 
+            if (idx % 4 !== 0) neighbors.push(idx - 1); 
+            if (idx % 4 !== 3) neighbors.push(idx + 1); 
+
+            const emptyNeighbor = neighbors.find(n => currentPuzzleIdx[n] === 15);
+
+            if (emptyNeighbor !== undefined) {
+                [currentPuzzleIdx[idx], currentPuzzleIdx[emptyNeighbor]] = [currentPuzzleIdx[emptyNeighbor], currentPuzzleIdx[idx]];
+                renderPuzzle();
+            }
+        }
+
+        /* --- Game 4: Typing --- */
+        let typingTimer;
+        let typingTimeLeft;
+
+        function startTypingGame() {
+            document.getElementById('game4-screen').classList.remove('hidden-screen');
+            
+            const inputEl = document.getElementById('typing-input');
+            const msgEl = document.getElementById('typing-msg');
+            const retryArea = document.getElementById('typing-retry-area');
+            const timerValEl = document.getElementById('typing-timer-val');
+
+            inputEl.value = '';
+            inputEl.disabled = false;
+            inputEl.focus();
+            msgEl.innerText = '';
+            retryArea.classList.add('hidden');
+
+            typingTimeLeft = state.typingTimeLimit;
+            timerValEl.innerText = typingTimeLeft;
+
+            if (typingTimer) clearInterval(typingTimer);
+            typingTimer = setInterval(() => {
+                typingTimeLeft--;
+                timerValEl.innerText = typingTimeLeft;
+                
+                if (typingTimeLeft <= 0) {
+                    failTypingGame();
+                }
+            }, 1000);
+        }
+
+        function failTypingGame() {
+            clearInterval(typingTimer);
+            document.getElementById('typing-input').disabled = true;
+            document.getElementById('typing-msg').innerText = "시간 초과! 다시 도전하세요.";
+            document.getElementById('typing-retry-area').classList.remove('hidden');
+            
+            if (state.typingTimeLimit === 10) {
+                state.typingTimeLimit = 15;
+            } else {
+                state.typingTimeLimit += 5;
+            }
+        }
+
+        function checkTyping() {
+            const target = "나랏말싸미 듕국에 달아 문자와로 서르 사맛디 아니할쎄"; 
+            const input = document.getElementById('typing-input').value;
+            if (input.trim() === target) {
+                clearInterval(typingTimer);
+                document.getElementById('typing-msg').innerText = "성공!";
+                document.getElementById('typing-input').disabled = true;
+                setTimeout(() => finishMinigame('typing'), 1000);
+            }
+        }
+
+        function checkFinalCode() {
+            const input = document.getElementById('final-code-input').value;
+            if(input === "1009") {
+                showEnding();
+            } else {
+                document.getElementById('btn-check-code').classList.add('hidden');
+                document.getElementById('code-error-area').classList.remove('hidden');
+            }
+        }
+
+        function retryCode() {
+            document.getElementById('final-code-input').value = '';
+            document.getElementById('code-error-area').classList.add('hidden');
+            document.getElementById('btn-check-code').classList.remove('hidden');
+            document.getElementById('final-code-input').focus();
+        }
+        
+        function showEnding() {
+            document.getElementById('code-input-screen').classList.add('hidden-screen');
+            document.getElementById('game-screen').classList.add('hidden-screen');
+            document.getElementById('ending-screen').classList.remove('hidden-screen');
+            document.getElementById('ending-name').innerText = state.userName;
+        }
+
+        // =========================================================================
+        // 🛠️ [확장 개발용 안내 가이드] 신규 문제 유형을 직접 수동으로 개발하고 싶을 때
+        // =========================================================================
+        // 1. 위 HTML 레이아웃의 #interaction-area 내부에 신규 유형을 위한 화면(div)을 추가합니다.
+        // 2. renderQuestion() 내부 분기 영역에 'else if (type === "내유형명")' 조건식을 선언합니다.
+        // 3. 사용자가 정답 제출을 마친 후 호출할 submitMyCustomAnswer() 검증 채점 함수를 구현합니다.
+        // 4. 채점 결과에 맞게 정답 시 'state.correctCount++; showFeedback(true);'를, 오답 시 'state.wrongQuestions.push(qIdx); showFeedback(false);'를 호출하세요.
+    </script>
+</body>
+</html>
